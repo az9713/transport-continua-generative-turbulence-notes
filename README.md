@@ -52,7 +52,8 @@ error. Lab 2 trains a small 3D U-Net on velocity fields and judges the samples
 by the spectrum, a spectral-collapse detector and gradient skewness.
 
 Open `index.html` directly in a browser after cloning; styles, controls and
-mathematical rendering are bundled for offline use. Chapter programs need Python
+mathematical rendering are bundled for offline use. The linked chapters of the
+source editions need a network connection. Chapter programs need Python
 3.13 and NumPy. The laboratories add PyTorch; see `requirements.txt`.
 
 Independent AI reviews do not constitute human expert certification. This course

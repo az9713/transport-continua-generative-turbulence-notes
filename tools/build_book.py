@@ -74,6 +74,16 @@ def body_of(document):
     return body
 
 
+def route(overview):
+    """Return the week table of the study route and its links in reading order."""
+    table = re.search(r'<h2 id="weeks">.*?(<table>.*?</table>)', overview, re.S)[1]
+    items = []
+    for week, cells in re.findall(r'<tr><td>(\d+)</td>(.*?)</tr>', table, re.S):
+        items += [(href, f'week {week}, {label}') for href, label in
+                  re.findall(r'<a href="([^"]+)">(.*?)</a>', cells)]
+    return table, items
+
+
 def page(title, body, chapter=False, previous=None, following=None):
     links = ''.join(f'<a href="{name}">{label}</a>' for name, label in [
         ('index.html', 'Chapters'), ('book-overview.html', 'Study route'),
@@ -81,10 +91,10 @@ def page(title, body, chapter=False, previous=None, following=None):
         ('references.html', 'References'), ('numerical-lab.html', 'Numerical lab')])
     turns = ''
     if chapter:
-        back = (f'<a rel="prev" href="{esc(previous)}">Previous chapter</a>'
-                if previous else '<span>First available chapter</span>')
-        ahead = (f'<a rel="next" href="{esc(following)}">Next chapter</a>'
-                 if following else '<span>Last available chapter</span>')
+        back = (f'<a rel="prev" href="{previous[0]}">Previous: {previous[1]}</a>'
+                if previous else '<span>Start of the route</span>')
+        ahead = (f'<a rel="next" href="{following[0]}">Next: {following[1]}</a>'
+                 if following else '<span>End of the route</span>')
         turns = f'<nav class="page-turn">{back}<a href="index.html">Index</a>{ahead}</nav>'
     toc = '<aside class="toc" id="chapter-toc"><h2>On this page</h2></aside>' if chapter else ''
     return f'''<!doctype html>
@@ -102,6 +112,10 @@ def build():
     manifest = json.loads(read(ROOT / 'source-manifest.json'))
     chapters = manifest['chapters']
     names = [public_path(c['file'], '.html').name for c in chapters]
+    overview_path = ROOT / 'book-overview.html'
+    overview = body_of(read(overview_path))
+    weeks, items = route(overview)
+    order = [href for href, _ in items]
     references = {}
     rows, source_rows = [], []
     for i, record in enumerate(chapters):
@@ -110,10 +124,11 @@ def build():
         meta = json.loads(read(path.with_suffix('.meta.json')))
         if digest(body) != meta['authored_body_sha256']:
             raise ValueError('Sidecar body digest mismatch: ' + path.name)
+        at = order.index(path.name)  # ValueError: a chapter is missing from the route
         write(path, page(record['title'], body, True,
-                         names[i-1] if i else None,
-                         names[i+1] if i+1 < len(names) else None))
-        rows.append(f'<li data-lecture><h2><a href="{esc(path.name)}">{esc(record["title"])}</a></h2><p>{esc(record["status"])}</p></li>')
+                         items[at-1] if at else None,
+                         items[at+1] if at+1 < len(items) else None))
+        rows.append(f'<li data-lecture><h3><a href="{esc(path.name)}">{esc(record["title"])}</a></h3><p>{esc(record["status"])}</p></li>')
         for reference in meta.get('references', []):
             safe_url(reference['url'])
             references[reference['url']] = reference
@@ -129,16 +144,14 @@ def build():
     final=len(accepted)==len(chapters)
     if completion.get('complete') is True and (not final or completion.get('local_release_checks') is not True):
         raise ValueError('Final reader requires every exact-body acceptance and local release checks')
-    notice=(f'All {len(chapters)} chapters have passed two independent scientific reviews. The public completion and publication records state the current release status, tested scope and limitations.'
+    notice=(f'All {len(chapters)} new chapters have passed two independent scientific reviews. The public completion and publication records state the current release status, tested scope and limitations.'
             if final else
-            f'All {len(chapters)} chapters are drafted. {len(accepted)} currently have two independent scientific acceptances. Final package and publication checks remain in progress.')
+            f'All {len(chapters)} new chapters are drafted. {len(accepted)} currently have two independent scientific acceptances. Final package and publication checks remain in progress.')
     index = '<h1>Transport, Continua and Generative Models of Turbulent Flow</h1><p class="lead">A synthesis course: continuum kinematics, flow matching and turbulence statistics, joined by new bridge chapters and laboratories.</p><p class="warning">'+esc(notice)+'</p>'
-    index += '<p>Eleven of the fourteen course weeks link to existing chapters in five source editions. The chapters below are the new material. Chapter counts are not evidence of completion. <a href="book-overview.html">Read the fourteen-week study route.</a></p>'
-    index += '<label class="search-label" for="lecture-search">Search available chapters</label><input id="lecture-search" type="search"><p id="search-status" role="status" aria-live="polite"></p><ol class="lecture-list">' + ''.join(rows) + '</ol>'
-    write(ROOT / 'index.html', page('Chapter index', index))
-    overview_path = ROOT / 'book-overview.html'
-    if overview_path.exists():
-        write(overview_path, page('Study route', body_of(read(overview_path))))
+    index += '<h2 id="weeks">The fourteen weeks</h2><p>The course has fourteen weeks and six new chapters. Eleven weeks read chapters of five existing study editions. The table links every reading in order. The linked chapters stay on their own sites and do not link back: return to this page for the next week. <a href="book-overview.html">The study route</a> adds the parts, the pace and the assessment.</p>' + weeks
+    index += '<h2 id="new-chapters">The new chapters</h2><label class="search-label" for="lecture-search">Search the new chapters</label><input id="lecture-search" type="search"><p id="search-status" role="status" aria-live="polite"></p><ol class="lecture-list">' + ''.join(rows) + '</ol>'
+    write(ROOT / 'index.html', page('Course index', index))
+    write(overview_path, page('Study route', overview))
     inventory = ''
     for r in manifest['sources']:
         inventory += '<tr>' + ''.join(f'<td>{v}</td>' for v in [
