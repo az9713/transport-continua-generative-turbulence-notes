@@ -90,7 +90,7 @@ def page(title, body, chapter=False, previous=None, following=None):
     return f'''<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="dark light"><meta name="book-content-sha256" content="{digest(body)}">
-<title>{esc(title)} · Transport, Continua and Generative Turbulence</title><link rel="stylesheet" href="assets/book.css">
+<title>{esc(title)} · Transport, Continua and Generative Turbulence</title><link rel="icon" href="data:,"><link rel="stylesheet" href="assets/book.css">
 <script>window.MathJax={{tex:{{inlineMath:[['$','$'],['\\\\(','\\\\)']],displayMath:[['$$','$$'],['\\\\[','\\\\]']],processEscapes:true}},svg:{{fontCache:'local'}},options:{{skipHtmlTags:['script','noscript','style','textarea','pre','code']}},startup:{{pageReady:()=>MathJax.startup.defaultPageReady().then(()=>{{document.documentElement.dataset.mathReady='true';}})}}}};</script>
 <script defer src="assets/mathjax-tex-svg.js"></script><script defer src="assets/book.js"></script></head>
 <body><a class="skip" href="#main">Skip to content</a><header class="site-header"><a class="brand" href="index.html">Transport, Continua and Generative Models of Turbulent Flow</a><nav class="course-nav" aria-label="Book">{links}</nav></header>
