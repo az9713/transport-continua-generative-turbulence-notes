@@ -1,0 +1,151 @@
+{
+  "chapter": 3,
+  "title": "3. Energy spectra from discrete velocity fields",
+  "status": "Independently reviewed; accepted",
+  "authored_body_sha256": "39f5a803fe54f90b257502afc8270059dda87a7eb220c74803334147e2b3af5b",
+  "sources": [
+    {
+      "edition": "Essentials of Turbulence (NPTEL study edition)",
+      "file": "chapter-08-random-processes-spectra-and-random-fields.html",
+      "url": "https://az9713.github.io/nptel-essentials-of-turbulence-notes/chapter-08-random-processes-spectra-and-random-fields.html#wavenumber-spectra",
+      "sections_used": "wavenumber-spectra: (8.29)-(8.34), Fourier pair, E(kappa) shell definition, isotropic E=2 pi kappa^2 Phi_ii; time-averages: (8.17) record worth T/(2 tau) samples"
+    },
+    {
+      "edition": "Essentials of Turbulence (NPTEL study edition)",
+      "file": "chapter-11-energy-spectrum.html",
+      "url": "https://az9713.github.io/nptel-essentials-of-turbulence-notes/chapter-11-energy-spectrum.html#band",
+      "sections_used": "band: (11.2)-(11.3) band energy and dissipation; spectrum: (11.7) inertial-range law"
+    },
+    {
+      "edition": "Essentials of Turbulence (NPTEL study edition)",
+      "file": "chapter-12-fourier-modes-and-their-evolution.html",
+      "url": "https://az9713.github.io/nptel-essentials-of-turbulence-notes/chapter-12-fourier-modes-and-their-evolution.html#mode-energy",
+      "sections_used": "mode-energy: one-sentence statement of the binned spectrum estimate, called a definition"
+    },
+    {
+      "edition": "Essentials of Turbulence (NPTEL study edition)",
+      "file": "chapter-13-spectral-energy-velocity-spectrum-tensor.html",
+      "url": "https://az9713.github.io/nptel-essentials-of-turbulence-notes/chapter-13-spectral-energy-velocity-spectrum-tensor.html#shells",
+      "sections_used": "covariance: uncorrelated coefficients under homogeneity; box-limit: (13.9)-(13.10) coefficient covariance ~ kappa_0^3 Phi; shells: shell counts 18, 62, 350 and N^(-1/2) scatter"
+    },
+    {
+      "edition": "Essentials of Turbulence (NPTEL study edition)",
+      "file": "chapter-14-kolmogorov-model-dissipation-spectra.html",
+      "url": "https://az9713.github.io/nptel-essentials-of-turbulence-notes/chapter-14-kolmogorov-model-dissipation-spectra.html#model-spectrum",
+      "sections_used": "model-spectrum: (14.9)-(14.10) and constants C=1.5, p0=2, beta=5.2, c_L=6.78, c_eta=0.40; scaling: (14.4) nominal limits; dissipation: D peak at kappa eta ~ 0.26 and 90 % point 0.73 at Re_lambda=600; jet-ranges: Table 14.3; implementation: 5 % tolerance tests; energy-range: Table 14.4, three readings of ell_0"
+    },
+    {
+      "edition": "Essentials of Turbulence (NPTEL study edition)",
+      "file": "chapter-15-reynolds-number-effects-spectrum-balance.html",
+      "url": "https://az9713.github.io/nptel-essentials-of-turbulence-notes/chapter-15-reynolds-number-effects-spectrum-balance.html#implementation",
+      "sections_used": "implementation, Part 4: shell energies of a Taylor-Green flow on 32^3 points"
+    },
+    {
+      "edition": "Essentials of Turbulence (NPTEL study edition)",
+      "file": "chapter-17-dns-pseudo-spectral-methods-cost.html",
+      "url": "https://az9713.github.io/nptel-essentials-of-turbulence-notes/chapter-17-dns-pseudo-spectral-methods-cost.html#lattice",
+      "sections_used": "lattice: (17.5)-(17.6) kappa_max = pi N / box; aliasing: (17.7)-(17.10); resolution: (17.11)-(17.12); implementation: product() with np.fft.fftn on 16^3"
+    },
+    {
+      "edition": "Essentials of Turbulence (NPTEL study edition)",
+      "file": "chapter-19-les-conceptual-steps-filtering.html",
+      "url": "https://az9713.github.io/nptel-essentials-of-turbulence-notes/chapter-19-les-conceptual-steps-filtering.html",
+      "sections_used": "Table 19.1: top-hat transfer function sinc(kappa Delta / 2)"
+    }
+  ],
+  "sections": [
+    {
+      "anchor": "discrete-field",
+      "lecture_material": "essentials ch08 (8.29); ch13 (13.10); ch17 (17.5)",
+      "extension": "none",
+      "construction": "course discrete convention and Proposition 3.1 (orthogonality, Parseval) with proof"
+    },
+    {
+      "anchor": "shell-sum",
+      "lecture_material": "essentials ch08 (8.32)-(8.34); ch11 (11.2); ch12 mode-energy; ch13 shells; ch17 (17.6), (17.9)-(17.10)",
+      "extension": "none",
+      "construction": "shell estimator (3.3), Propositions 3.2-3.4 with proofs, lattice-count error measured"
+    },
+    {
+      "anchor": "synthetic-field",
+      "lecture_material": "essentials ch14 (14.9)-(14.12); ch13 shells N^(-1/2) estimate",
+      "extension": "none",
+      "construction": "random-phase and Gaussian solenoidal field, Proposition 3.5 with proof, program Parts 1-4"
+    },
+    {
+      "anchor": "box-and-nyquist",
+      "lecture_material": "essentials ch17 (17.11)-(17.12); ch14 dissipation and (14.4)",
+      "extension": "none",
+      "construction": "resolved shares of k and eps, eps bias of the compensated spectrum, Proposition 3.6 with proof"
+    },
+    {
+      "anchor": "three-ranges",
+      "lecture_material": "essentials ch11 (11.7); ch14 (14.4), Table 14.3",
+      "extension": "none",
+      "construction": "six-step range-reading procedure, slope-fit counterexample, Table 3.1"
+    },
+    {
+      "anchor": "windowing",
+      "lecture_material": "none",
+      "extension": "none",
+      "construction": "Propositions 3.7 (leakage rate) and 3.8 (Hann on the grid) with proofs, program Part 7"
+    },
+    {
+      "anchor": "striding",
+      "lecture_material": "essentials ch17 (17.7); ch13 covariance; ch19 Table 19.1 box transfer",
+      "extension": "none",
+      "construction": "Proposition 3.9 (folding) with proof, sharp and cell-average prefilters, program Part 8"
+    },
+    {
+      "anchor": "sampling-choice",
+      "lecture_material": "none",
+      "extension": "course DNS labs/dns_isotropic.py and its published output in data/dns/; JHTDB isotropic1024coarse README as a cited comparison (not queried)",
+      "construction": "Table 3.2 and Table 3.3; the section 3.5 range procedure applied to the measured spectrum; measured crop and stride spectra; code/ch03_dns_spectrum.py and its output"
+    },
+    {
+      "anchor": "program",
+      "lecture_material": "none",
+      "extension": "none",
+      "construction": "code/ch03_energy_spectrum.py and its output (synthetic fields)"
+    },
+    {
+      "anchor": "exercises",
+      "lecture_material": "none",
+      "extension": "none",
+      "construction": "eight exercises with complete solutions"
+    }
+  ],
+  "references": [
+    {
+      "title": "JHTDB forced isotropic turbulence data set (extended), README",
+      "url": "https://turbulence.pha.jhu.edu/docs/README-isotropic.pdf",
+      "supports": "isotropic1024coarse grid, Re_lambda=418, eta=0.00280, L_11=1.364, E_tot=0.705, eps=0.103, quoted as a comparison in Section 3.8"
+    },
+    {
+      "title": "Lienen, Ludke, Hansen-Palmus, Gunnemann, From zero to turbulence: generative modeling for 3D flow simulation (ICLR 2024), arXiv 2306.01776",
+      "url": "https://arxiv.org/abs/2306.01776",
+      "supports": "a generated turbulent field is evaluated by its spherically integrated TKE spectrum (Eq. 6), the motivation in the lead and Chapter 5"
+    }
+  ],
+  "code": {
+    "file": "code/ch03_energy_spectrum.py",
+    "python": "3.13",
+    "packages": [
+      "numpy"
+    ],
+    "also": [
+      "code/ch03_dns_spectrum.py"
+    ]
+  },
+  "independent_review": {
+    "status": "accepted",
+    "accepted_body_sha256": "39f5a803fe54f90b257502afc8270059dda87a7eb220c74803334147e2b3af5b",
+    "rounds": 3
+  },
+  "data": [
+    "data/dns/params.json",
+    "data/dns/stats.csv",
+    "data/dns/spectrum.csv",
+    "data/dns/sampling_spectra.csv"
+  ]
+}

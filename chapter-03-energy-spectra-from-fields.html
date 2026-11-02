@@ -1,0 +1,635 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark light"><meta name="book-content-sha256" content="39f5a803fe54f90b257502afc8270059dda87a7eb220c74803334147e2b3af5b">
+<title>3. Energy spectra from discrete velocity fields · Transport, Continua and Generative Turbulence</title><link rel="stylesheet" href="assets/book.css">
+<script>window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],['\\[','\\]']],processEscapes:true},svg:{fontCache:'local'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']},startup:{pageReady:()=>MathJax.startup.defaultPageReady().then(()=>{document.documentElement.dataset.mathReady='true';})}};</script>
+<script defer src="assets/mathjax-tex-svg.js"></script><script defer src="assets/book.js"></script></head>
+<body><a class="skip" href="#main">Skip to content</a><header class="site-header"><a class="brand" href="index.html">Transport, Continua and Generative Models of Turbulent Flow</a><nav class="course-nav" aria-label="Book"><a href="index.html">Chapters</a><a href="book-overview.html">Study route</a><a href="source-map.html">Source map</a><a href="references.html">References</a><a href="numerical-lab.html">Numerical lab</a></nav></header>
+<div class="layout"><aside class="toc" id="chapter-toc"><h2>On this page</h2></aside><main id="main"><div class="reading-tools"><button id="theme-toggle" aria-pressed="false">Light theme</button><button id="text-toggle" aria-pressed="false">Larger text</button><button id="solutions-toggle" aria-pressed="false">Expand solutions</button><button id="print-page">Print with solutions</button></div>
+<article id="chapter-content"><!-- BOOK-CONTENT-START --><h1 id="ch03-title">3. Energy spectra from discrete velocity fields</h1>
+<p class="lead">Chapter 5 judges a generated turbulent field by its energy spectrum, and the course laboratory computes that spectrum from $64^3$ velocity samples. The essentials edition defines $E(\kappa)$ for unbounded homogeneous turbulence, as a shell integral of the velocity-spectrum tensor. It states the binned estimate for a periodic box in one sentence of its chapter 12 and evaluates shell energies in one program of its chapter 15, on a $32^3$ Taylor–Green flow, but it never tests the estimate on a field whose spectrum is known. This chapter supplies that test and the estimator's error budget. On a periodic grid, shell sums of squared discrete Fourier coefficients give a spectrum whose total equals the grid kinetic energy exactly. Its distance from $E(\kappa)$ has six identifiable parts: lattice geometry, finite sampling, the box, the Nyquist limit, window leakage in a non-periodic cutout and aliasing in a strided sample. Each is proved or measured below on synthetic fields whose spectrum is known. The three spectral ranges are then read from compensated and dissipation spectra, and a worked case shows that a fitted slope of $-1.634$, $0.033$ from $-5/3$, does not by itself establish an inertial subrange. The last step applies all of this to the course's own $256^3$ direct numerical simulation (DNS) at $\mathrm{Re}_\lambda=115$. Its two $64^3$ samples are compared with their parent, and the range procedure finds no inertial band in the measured spectrum, although a hand-picked band fits a slope of $-1.699$.</p>
+<div class="learning-map"><strong>From a definition to an estimator with a known error budget.</strong> Fix the discrete transform and prove Parseval for shell sums. Build a solenoidal isotropic field with a prescribed spectrum and recover it to roundoff. Quantify what the lattice, one realization, the box and the grid cannot show. Read the three ranges with stated tolerances. Then measure window leakage in a contiguous cutout and aliasing in a strided sample, use both to choose between the two kinds of $64^3$ sample, and apply the range procedure to the measured spectrum of the course DNS.</div>
+<p class="source-note">Read for this chapter, in the essentials-of-turbulence edition: chapter 8, sections on time averages, (8.17), and on wavenumber spectra, (8.29)–(8.34); chapter 11, sections on band energy and dissipation, (11.2)–(11.3), and on dimensional analysis, (11.7); chapter 13, sections on the covariance of the coefficients, on the box limit, (13.9)–(13.10), and on spherical shells; chapter 14, sections on the model spectrum, (14.9)–(14.12), the dissipation spectrum and the three ranges of the running case, Table 14.3 and the nominal limits (14.4); chapter 17, sections on the lattice, (17.5)–(17.6), aliasing, (17.7)–(17.10), resolution, (17.11)–(17.12), and the embedded program whose <code>product()</code> function applies <code>np.fft.fftn</code> on a $16^3$ grid to an aliasing test. None of these chapters computes $E(\kappa)$ from a field. Two other chapters come closest: <a href="https://az9713.github.io/nptel-essentials-of-turbulence-notes/chapter-12-fourier-modes-and-their-evolution.html#mode-energy">essentials chapter 12, section on the energy of a mode</a>, states the binned estimate in one sentence and calls it a definition, and the program of <a href="https://az9713.github.io/nptel-essentials-of-turbulence-notes/chapter-15-reynolds-number-effects-spectrum-balance.html#implementation">essentials chapter 15</a>, Part 4, evaluates shell energies of a Taylor–Green flow on $32^3$ points to measure energy transfer. The propositions on the discrete estimator, the synthetic field, the window and stride analyses, the range-reading procedure, the programs and the exercises are original to this chapter. The top-hat transfer function is quoted from <a href="https://az9713.github.io/nptel-essentials-of-turbulence-notes/chapter-19-les-conceptual-steps-filtering.html">essentials chapter 19, Table 19.1</a>. Every measured number of Sections 3.1–3.7 and 3.9 comes from synthetic fields. Every measured number of Section 3.8 comes from the course DNS, <a href="labs/dns_isotropic.py">labs/dns_isotropic.py</a>, through its published output in <code>data/dns/</code> or, for the acceptance check and the separate checks that the text names, through its stored snapshots, except the Johns Hopkins Turbulence Database (JHTDB) figures, which are quoted from the <a href="https://turbulence.pha.jhu.edu/docs/README-isotropic.pdf">dataset README</a> as a comparison. The database was not queried for this chapter.</p>
+
+<h2 id="discrete-field">3.1 A periodic grid turns the spectrum into a finite sum</h2>
+<p>A simulation or a database returns velocity values at grid points, not a velocity-spectrum tensor. Let the periodic box be $[0,\mathcal L)^3$ with $N$ points per direction, $N$ even, spacing $h=\mathcal L/N$, and grid points $\mathbf x_{\mathbf j}=h\mathbf j$ for integer vectors $\mathbf j\in\{0,\dots,N-1\}^3$. The box side is written $\mathcal L$, as in <a href="https://az9713.github.io/nptel-essentials-of-turbulence-notes/chapter-17-dns-pseudo-spectral-methods-cost.html#lattice">essentials chapter 17, (17.5)</a>, because $L=k^{3/2}/\varepsilon$ is the large-eddy length of the model spectrum used in Section 3.3. The fluid velocity at one fixed physical time is $\mathbf v(\mathbf x)$; the essentials edition writes $\mathbf u$. The turbulent kinetic energy is $k$ and the dissipation rate $\varepsilon$, as in the course notation table.</p>
+<p>The fundamental wavenumber is $\kappa_0=2\pi/\mathcal L$. The grid represents the wavenumber vectors $\boldsymbol\kappa=\kappa_0\mathbf n$ with $\mathbf n$ in the index set $\Lambda_N=\{\mathbf n\in\mathbb Z^3:-N/2\le n_i\le N/2-1\}$, which is the set of <code>np.fft.fftfreq(N, 1/N)</code>. Essentials (17.5) labels the same $N$ values $-N/2+1\le n_i\le N/2$; the two differ only in the label of the plane $|n_i|=N/2$, the Nyquist plane of the grid, which reported spectra exclude (Section 3.2). The course convention for the discrete transform and its inverse is</p>
+<div class="equation">$$\hat{\mathbf v}_{\mathbf n}=\frac1{N^3}\sum_{\mathbf j}\mathbf v(\mathbf x_{\mathbf j})\,e^{-i\kappa_0\mathbf n\cdot\mathbf x_{\mathbf j}},\qquad \mathbf v(\mathbf x_{\mathbf j})=\sum_{\mathbf n\in\Lambda_N}\hat{\mathbf v}_{\mathbf n}\,e^{i\kappa_0\mathbf n\cdot\mathbf x_{\mathbf j}}.\tag{3.1}$$</div>
+<p>In NumPy the pair is <code>np.fft.fftn(v)/N**3</code> and <code>np.fft.ifftn(vhat)*N**3</code>. The coefficient is a grid average of $\mathbf v\,e^{-i\boldsymbol\kappa\cdot\mathbf x}$, so it has the units of velocity. Because $h^3=\mathcal L^3/N^3$ and $\mathcal L^3=(2\pi)^3\kappa_0^{-3}$, the sum in (3.1) is $\kappa_0^3$ times a Riemann sum for the continuous course transform $(2\pi)^{-3}\int_{\text{box}}\mathbf v\,e^{-i\boldsymbol\kappa\cdot\mathbf x}\,d\mathbf x$. The same factor appears in <a href="https://az9713.github.io/nptel-essentials-of-turbulence-notes/chapter-13-spectral-energy-velocity-spectrum-tensor.html#box-limit">essentials (13.10)</a>: the coefficient covariance of a box much larger than the integral scale is approximately $\kappa_0^3$ times the velocity-spectrum tensor $\Phi_{ij}$ of (8.29). The factor $\kappa_0^3$ is the volume of wavenumber space per lattice point.</p>
+<div class="prop"><p><strong>Proposition 3.1 — discrete orthogonality and Parseval.</strong> For $\mathbf n,\mathbf n'\in\Lambda_N$,</p><div class="equation">$$\frac1{N^3}\sum_{\mathbf j}e^{i\kappa_0(\mathbf n-\mathbf n')\cdot\mathbf x_{\mathbf j}}=\delta_{\mathbf n\mathbf n'},\qquad \frac1{N^3}\sum_{\mathbf j}|\mathbf v(\mathbf x_{\mathbf j})|^2=\sum_{\mathbf n\in\Lambda_N}|\hat{\mathbf v}_{\mathbf n}|^2.\tag{3.2}$$</div><p>Here $\delta_{\mathbf n\mathbf n'}$ is one if $\mathbf n=\mathbf n'$ and zero otherwise, and $|\hat{\mathbf v}_{\mathbf n}|^2=\hat{\mathbf v}_{\mathbf n}\cdot\hat{\mathbf v}_{\mathbf n}^*$ with $^*$ the complex conjugate. The two formulas of (3.1) are inverse to each other.</p></div>
+<div class="proof"><p><strong>Proof.</strong> Since $\kappa_0x_{\mathbf j,i}=2\pi j_i/N$, the sum factorizes into three geometric sums $\sum_{j=0}^{N-1}e^{2\pi i d j/N}$ with integer $d=n_i-n'_i$ and $|d|\le N-1$. If $d=0$ the sum is $N$. Otherwise $e^{2\pi id/N}\ne1$, and the geometric-series formula gives $(1-e^{2\pi id})/(1-e^{2\pi id/N})=0$. The product of the three factors divided by $N^3$ is $\delta_{\mathbf n\mathbf n'}$. Substituting the inverse formula into the forward one and applying orthogonality returns $\hat{\mathbf v}_{\mathbf n}$; both maps are linear between spaces of dimension $3N^3$, so each is the inverse of the other. For Parseval, write $|\mathbf v(\mathbf x_{\mathbf j})|^2$ as the double sum $\sum_{\mathbf n}\sum_{\mathbf n'}\hat{\mathbf v}_{\mathbf n}\cdot\hat{\mathbf v}_{\mathbf n'}^*e^{i\kappa_0(\mathbf n-\mathbf n')\cdot\mathbf x_{\mathbf j}}$ and average over $\mathbf j$; orthogonality keeps only the terms $\mathbf n=\mathbf n'$. <span class="qed">∎</span></p></div>
+<p>A real field has $\hat{\mathbf v}_{-\mathbf n}=\hat{\mathbf v}_{\mathbf n}^*$ whenever both indices lie in $\Lambda_N$. An index $n_i=-N/2$ is special: its negative, $N/2$, is the same point of the grid's frequency circle, so that coefficient is its own partner in direction $i$ and can represent a cosine but not a sine at the Nyquist wavenumber. This is one reason, beyond the isotropy argument of the next section, for discarding the planes $n_i=-N/2$ when a spectrum is reported.</p>
+
+<h2 id="shell-sum">3.2 Shell sums give a discrete spectrum whose total is exactly the grid energy</h2>
+<p>Turbulent kinetic energy excludes the mean flow. Let $\mathbf v'=\mathbf v-\langle\mathbf v\rangle_N$, where $\langle\cdot\rangle_N$ is the average over the $N^3$ grid points; then $\hat{\mathbf v}'_{\mathbf 0}=0$ and the other coefficients are unchanged. The grid kinetic energy is $k_N=\tfrac12\langle\mathbf v'\cdot\mathbf v'\rangle_N$. For an integer $m\ge0$ define the shell $S_m=\{\mathbf n\in\Lambda_N:m-\tfrac12\le|\mathbf n|\lt m+\tfrac12\}$, its count $N_m$, the shell energy and the spectrum estimate</p>
+<div class="equation">$$\hat E_m=\frac12\sum_{\mathbf n\in S_m}|\hat{\mathbf v}'_{\mathbf n}|^2,\qquad E_N(m\kappa_0)=\frac{\hat E_m}{\kappa_0}.\tag{3.3}$$</div>
+<p>The first formula is the discrete form of <a href="https://az9713.github.io/nptel-essentials-of-turbulence-notes/chapter-08-random-processes-spectra-and-random-fields.html#wavenumber-spectra">essentials (8.32)</a>: half the trace of the coefficient covariance, summed over a spherical shell. The second divides the band energy by the band width $\kappa_0$, as the band energy (11.2) of <a href="https://az9713.github.io/nptel-essentials-of-turbulence-notes/chapter-11-energy-spectrum.html#band">essentials chapter 11</a> relates to $E$. No shell boundary can hold a lattice point: $|\mathbf n|^2$ is an integer, while $(m+\tfrac12)^2=m^2+m+\tfrac14$ is not. Rounding $|\mathbf n|$ to the nearest integer therefore assigns every index to exactly one shell.</p>
+<div class="prop"><p><strong>Proposition 3.2 — shell Parseval.</strong> For every grid field, $\sum_{m\ge0}\hat E_m=\sum_m E_N(m\kappa_0)\,\kappa_0=k_N$. The sum runs to the largest occupied shell, $m=\lfloor\sqrt3N/2+\tfrac12\rfloor$.</p></div>
+<div class="proof"><p><strong>Proof.</strong> The shells partition $\Lambda_N$, as shown above, so $\sum_m\hat E_m=\tfrac12\sum_{\mathbf n\in\Lambda_N}|\hat{\mathbf v}'_{\mathbf n}|^2$. Proposition 3.1 applied to $\mathbf v'$ makes this $\tfrac12\langle|\mathbf v'|^2\rangle_N=k_N$. The largest $|\mathbf n|$ in $\Lambda_N$ is $\sqrt3N/2$, attained at $n_i=-N/2$ for all $i$. <span class="qed">∎</span></p></div>
+<p>The identity is a test of the code, not of the physics. A wrong normalization, a shell set that misses part of $\Lambda_N$, or a mean removed from one side of the comparison and left in the other breaks it; a correct implementation meets it to roundoff, $6.7\times10^{-16}$ relative in the program of Section 3.9. It does not detect a wrong $\kappa_0$ in $E_N=\hat E_m/\kappa_0$, nor a correct total distributed over the wrong shells. Those errors need a field with a known spectrum (Section 3.3).</p>
+<div class="prop"><p><strong>Proposition 3.3 — complete shells.</strong> $S_m$ contains every integer vector $\mathbf n$ with $m-\tfrac12\le|\mathbf n|\lt m+\tfrac12$ if and only if $m\le N/2-1$.</p></div>
+<div class="proof"><p><strong>Proof.</strong> If $m\le N/2-1$ and $|\mathbf n|\lt m+\tfrac12$, then each integer component satisfies $|n_i|\le m\le N/2-1$, so $\mathbf n\in\Lambda_N$. If $m\ge N/2$, the vector $(m,0,0)$ lies in the shell of radius $m$ but has $n_1\ge N/2$, so it is not in $\Lambda_N$. <span class="qed">∎</span></p></div>
+<p>Shells with $N/2\le m\le\sqrt3N/2$ hold only the corners of the index cube, and their counts no longer grow like the shell volume. The grid's isotropic resolution limit is therefore $\kappa_{\max}=\tfrac12N\kappa_0=\pi N/\mathcal L$, the Nyquist wavenumber of <a href="https://az9713.github.io/nptel-essentials-of-turbulence-notes/chapter-17-dns-pseudo-spectral-methods-cost.html#lattice">essentials (17.6)</a>, and $E_N$ is reported here only for $m\le N/2-1$; the Parseval sum includes the corners. A DNS field dealiased by the sphere (17.10) has empty shells beyond the retained radius. A field dealiased by the cube rule (17.9), which keeps $|n_i|\le n_c$, has complete shells only for $m\le n_c$ by the same argument, corner shells up to $m=\sqrt3n_c$ and empty shells beyond; the course DNS of Section 3.8 has $n_c=85$ and occupied shells up to 147. These limits come from the solver, not from the physics of the flow.</p>
+<p>The link between the shell sum and $E(\kappa)$ requires a statistical model of the coefficients. In isotropic turbulence $\Phi_{ii}(\boldsymbol\kappa)=E(|\boldsymbol\kappa|)/(2\pi|\boldsymbol\kappa|^2)$ by (8.34), so the box relation (13.10) gives the per-mode energy $\tfrac12\langle|\hat{\mathbf v}_{\mathbf n}|^2\rangle\approx\kappa_0^3E(|\boldsymbol\kappa|)/(4\pi|\boldsymbol\kappa|^2)$, where $\langle\cdot\rangle$ is an ensemble average. The relation is approximate for a simulated box and exact by construction for the synthetic fields of Section 3.3.</p>
+<div class="prop"><p><strong>Proposition 3.4 — what the shell sum estimates.</strong> If $\tfrac12\langle|\hat{\mathbf v}_{\mathbf n}|^2\rangle=\kappa_0^3E(|\boldsymbol\kappa|)/(4\pi|\boldsymbol\kappa|^2)$ for $\mathbf n\in S_m$ with $1\le m\le N/2-1$, then</p><div class="equation">$$\langle\hat E_m\rangle=\sum_{\mathbf n\in S_m}\kappa_0^3\,\frac{E(|\boldsymbol\kappa|)}{4\pi|\boldsymbol\kappa|^2},\qquad \int_{(m-1/2)\kappa_0}^{(m+1/2)\kappa_0}E(\kappa)\,d\kappa=\int_{\text{shell}}\frac{E(|\boldsymbol\kappa|)}{4\pi|\boldsymbol\kappa|^2}\,d\boldsymbol\kappa.\tag{3.4}$$</div><p>The expected shell energy is therefore the lattice Riemann sum, one point per cell of volume $\kappa_0^3$, of the band integral of $E$.</p></div>
+<div class="proof"><p><strong>Proof.</strong> The first formula is linearity of the expectation applied to (3.3). For the second, write $d\boldsymbol\kappa=\kappa^2\,d\kappa\,d\Omega$ with $d\Omega$ the solid-angle element; the integrand depends on $\kappa$ only, the solid angle contributes $4\pi$, and $\kappa^2$ cancels. <span class="qed">∎</span></p></div>
+<p>The error of the Riemann sum is a lattice-counting error. The shell volume is $\tfrac{4\pi}3[(m+\tfrac12)^3-(m-\tfrac12)^3]\kappa_0^3=4\pi(m^2+\tfrac1{12})\kappa_0^3$, while the count $N_m$ fluctuates around $4\pi(m^2+\tfrac1{12})$. The program counts $N_1=18$ against $13.6$, $N_3=98$ against $114.1$ and $N_{20}=5034$ against $5027.6$; the counts 18, 62 and 350 for $m=1,2,5$ agree with those of <a href="https://az9713.github.io/nptel-essentials-of-turbulence-notes/chapter-13-spectral-energy-velocity-spectrum-tensor.html#shells">essentials chapter 13, section on spherical shells</a>. For the model spectrum of Section 3.3 the ratio of lattice sum to band integral is $1.2411$, $1.0865$ and $0.8028$ at $m=1,2,3$, $0.9676$ at $m=10$ and $0.9993$ at $m=20$. Rescaling by the volume-to-count ratio gives $0.9387$, $0.8992$ and $0.9350$ at $m=1,2,3$: the count correction does not remove the error, because $E/(4\pi\kappa^2)$ varies strongly across the lowest shells. It also breaks the exact identity of Proposition 3.2. The course therefore reports the uncorrected shell sums and attaches a geometric uncertainty of up to 25 % to the lowest five shells, before any statistical error.</p>
+
+<h2 id="synthetic-field">3.3 A solenoidal isotropic field with a prescribed spectrum is built mode by mode</h2>
+<p>An estimator is tested on a field whose spectrum is known. The test spectrum is the model of <a href="https://az9713.github.io/nptel-essentials-of-turbulence-notes/chapter-14-kolmogorov-model-dissipation-spectra.html#model-spectrum">essentials (14.9)–(14.10)</a>,</p>
+<div class="equation">$$E(\kappa)=C\varepsilon^{2/3}\kappa^{-5/3}\Bigl[\frac{\kappa L}{((\kappa L)^2+c_L)^{1/2}}\Bigr]^{5/3+p_0}\exp\Bigl\{-\beta\Bigl[\bigl((\kappa\eta)^4+c_\eta^4\bigr)^{1/4}-c_\eta\Bigr]\Bigr\},\tag{3.5}$$</div>
+<p>with the edition's constants $C=1.5$, $p_0=2$ (the low-wavenumber exponent of $E$, not a probability density), $\beta=5.2$ and its high-Reynolds-number values $c_L=6.78$, $c_\eta=0.40$. The bracket in (3.5) is the large-scale factor $f_L$ and the exponential is the dissipation factor $f_\eta$ of (14.10). Here $\eta$ is the Kolmogorov length and $\nu$ the kinematic viscosity, related by $\eta=(\nu^3/\varepsilon)^{1/4}$. The box is $[0,2\pi)^3$, so $\kappa_0=1$ and the shell index equals the wavenumber. The shape parameters are $L=1$, $\eta=0.01$ and $\varepsilon=1$, which give $\nu=2.1544\times10^{-3}$. They are shape parameters, not the statistics of the field. Because $c_L$ and $c_\eta$ satisfy the integral conditions (14.11)–(14.12) only at infinite Reynolds number, the model has $\int_0^\infty E\,d\kappa=0.8221$ and $\int_0^\infty2\nu\kappa^2E\,d\kappa=0.9408$, not one; then $k^{3/2}/\varepsilon=0.792$ differs from $L=1$, and the Taylor-scale Reynolds number $\mathrm{Re}_\lambda=(20k^2/(3\varepsilon\nu))^{1/2}$ is $47.1$. The field's own $k$ and $\varepsilon$ are always computed from the field.</p>
+<p>Write $\mathsf P(\boldsymbol\kappa)$ for the solenoidal projector, $\mathsf P_{ij}=\delta_{ij}-\kappa_i\kappa_j/|\boldsymbol\kappa|^2$, and $A(\kappa)^2=2\kappa_0^3E(\kappa)/(4\pi\kappa^2)$ for the target squared modulus of one coefficient. The construction has four steps.</p>
+<ol>
+<li>Draw three independent grid fields $\boldsymbol\xi(\mathbf x_{\mathbf j})$ of independent standard normal values and transform them with (3.1) to $\hat{\mathbf w}_{\mathbf n}$.</li>
+<li>Project: $\hat{\mathbf p}_{\mathbf n}=\mathsf P(\kappa_0\mathbf n)\hat{\mathbf w}_{\mathbf n}$.</li>
+<li>Set the amplitude, keeping only $0\lt|\mathbf n|\lt N/2-\tfrac12$ and setting all other coefficients to zero. The random-phase variant is $\hat{\mathbf v}_{\mathbf n}=A\,\hat{\mathbf p}_{\mathbf n}/|\hat{\mathbf p}_{\mathbf n}|$. The Gaussian variant is $\hat{\mathbf v}_{\mathbf n}=(N^3A^2/2)^{1/2}\,\hat{\mathbf p}_{\mathbf n}$.</li>
+<li>Invert with (3.1).</li>
+</ol>
+<div class="prop"><p><strong>Proposition 3.5 — the synthetic field.</strong> In both variants (a) $\mathbf v$ is real, (b) $\boldsymbol\kappa\cdot\hat{\mathbf v}_{\mathbf n}=0$ for every $\mathbf n$, so the spectral divergence vanishes, and (c) $\tfrac12\langle|\hat{\mathbf v}_{\mathbf n}|^2\rangle=\kappa_0^3E(|\boldsymbol\kappa|)/(4\pi|\boldsymbol\kappa|^2)$ on the kept set. In the random-phase variant (c) holds for every realization, so $\hat E_m$ equals the lattice sum of (3.4) exactly. In the Gaussian variant $\hat E_m$ is a sum of $N_m$ independent exponential random variables, and its relative standard deviation is at least $N_m^{-1/2}$, with equality when the per-mode energies of the shell are equal.</p></div>
+<div class="proof"><p><strong>Proof.</strong> (a) Because $\boldsymbol\xi$ is real, $\hat{\mathbf w}_{-\mathbf n}=\hat{\mathbf w}_{\mathbf n}^*$. The projector is real and even in $\boldsymbol\kappa$, and $A$ depends on $|\boldsymbol\kappa|$ only, so $\hat{\mathbf v}_{-\mathbf n}=\hat{\mathbf v}_{\mathbf n}^*$; the modulus $|\hat{\mathbf p}_{\mathbf n}|$ is the same at $\pm\mathbf n$. The kept set excludes $n_i=-N/2$, so it is closed under $\mathbf n\mapsto-\mathbf n$. The inverse sum then pairs each term with its conjugate and is real. (b) $\boldsymbol\kappa\cdot\mathsf P\mathbf a=\boldsymbol\kappa\cdot\mathbf a-\boldsymbol\kappa\cdot\boldsymbol\kappa\,(\boldsymbol\kappa\cdot\mathbf a)/|\boldsymbol\kappa|^2=0$ for every vector $\mathbf a$; the amplitude is a scalar factor. (c) For the random-phase variant $|\hat{\mathbf v}_{\mathbf n}|^2=A^2$ exactly. For the Gaussian variant, orthogonality (3.2) gives $\langle\hat w_{\mathbf n,i}\hat w^*_{\mathbf n',l}\rangle=N^{-3}\delta_{il}\delta_{\mathbf n\mathbf n'}$ and $\langle\hat w_{\mathbf n,i}\hat w_{\mathbf n',l}\rangle=N^{-3}\delta_{il}\delta_{\mathbf n,-\mathbf n'}$, with $\delta_{il}$ the Kronecker delta. Hence $\langle|\mathsf P\hat{\mathbf w}_{\mathbf n}|^2\rangle=N^{-3}\operatorname{tr}\mathsf P=2N^{-3}$, and the factor $N^3A^2/2$ gives $\langle|\hat{\mathbf v}_{\mathbf n}|^2\rangle=A^2$. For the distribution, $\hat{\mathbf w}_{\mathbf n}$ is a linear map of Gaussian values, and the two covariances show that for $\mathbf n\ne\mathbf 0$ off the Nyquist planes its real and imaginary parts are independent with equal variance and independent of all $\hat{\mathbf w}_{\mathbf n'}$ with $\mathbf n'\ne\pm\mathbf n$. In an orthonormal basis of the plane perpendicular to $\boldsymbol\kappa$, $\hat{\mathbf p}_{\mathbf n}$ has two such circular components, and the squared modulus of each is exponentially distributed. The pairs $\pm\mathbf n$ carry equal energy, so $\hat E_m=\sum_{\text{pairs}}|\hat{\mathbf v}_{\mathbf n}|^2$ is a sum of $N_m/2$ pairs times two components, $N_m$ independent exponential variables with means $\mu_r$. An exponential variable has standard deviation equal to its mean, so the relative standard deviation is $(\sum_r\mu_r^2)^{1/2}/\sum_r\mu_r$. By the Cauchy–Schwarz inequality this is at least $N_m^{-1/2}$, with equality if and only if all $\mu_r$ are equal. <span class="qed">∎</span></p></div>
+<p>The statistical part repeats, with a proof, the estimate of essentials chapter 13 for Gaussian coefficients; its 24 % for the lowest shell is $18^{-1/2}=0.236$. The random-phase variant removes this scatter and isolates the estimator. Turbulent Fourier coefficients are not exactly Gaussian, so the $N_m^{-1/2}$ rule is a reference value for real data, not a theorem about them.</p>
+<p>The program of Section 3.9 builds the random-phase field on $64^3$ points. The largest relative spectral divergence is $1.3\times10^{-15}$, the physical-space divergence relative to the root-mean-square velocity gradient is $6.7\times10^{-16}$, and the largest imaginary part left by the inverse transform is $9.3\times10^{-16}$. Parseval gives $k_N=0.763833794206$ from both sides, a relative difference of $6.7\times10^{-16}$. The shell sums agree with the prescribed lattice sums of (3.4) to $5.6\times10^{-15}$ in every shell $m=1,\dots,31$. Twenty-four Gaussian realizations give relative shell scatter $0.200$, $0.153$, $0.054$ and $0.015$ at $m=1,2,5,20$, against $N_m^{-1/2}=0.236$, $0.127$, $0.053$ and $0.014$. A standard deviation estimated from 24 samples has a relative uncertainty of about $1/\sqrt{2\cdot23}=0.15$. The measured values lie 15 % below the prediction at $m=1$ and 20 % above it at $m=2$, which is $1.0$ and $1.4$ times that uncertainty, and within 7 % of it at $m=5,20$. Roundoff-level digits such as $6.7\times10^{-16}$ depend on the machine and the NumPy build; the other printed values do not, at the printed precision, for the fixed seed.</p>
+
+<h2 id="box-and-nyquist">3.4 The box and the grid bound which part of the spectrum exists</h2>
+<p>A periodic field has no modes between $0$ and $\kappa_0$ and, isotropically, none above $\kappa_{\max}=\pi N/\mathcal L$. For a DNS, the box sets the first limit and the grid the second. <a href="https://az9713.github.io/nptel-essentials-of-turbulence-notes/chapter-17-dns-pseudo-spectral-methods-cost.html#resolution">Essentials chapter 17, section on resolution</a> states the two working criteria: a box of eight integral length scales, $\mathcal L=8L_{11}$ (17.11), and $\kappa_{\max}\eta\ge1.5$ (17.12). For the synthetic shape of Section 3.3 both limits can be evaluated exactly, because the full model integrals are known. The $64^3$ grid keeps shells up to $m=31$, where $\kappa\eta=0.31$, and holds $0.929$ of the model's $k$ but only $0.432$ of its $\varepsilon$. A $128^3$ grid of the same box keeps shells up to $m=63$, $\kappa\eta=0.63$, and holds $0.989$ and $0.840$.</p>
+<p>The dissipation is the integral most sensitive to the Nyquist limit, because its integrand $D(\kappa)=2\nu\kappa^2E(\kappa)$ peaks at much higher wavenumber than $E$. In the program $E$ peaks at $m=2$ and $D$ at $m=25$, $\kappa\eta=0.25$. <a href="https://az9713.github.io/nptel-essentials-of-turbulence-notes/chapter-14-kolmogorov-model-dissipation-spectra.html#dissipation">Essentials chapter 14</a> reports the peak of $D$ at $\kappa\eta\approx0.26$ and the 90 % point of the cumulative dissipation at $\kappa\eta=0.73$ for the model at $\mathrm{Re}_\lambda=600$; a grid that stops at $\kappa\eta=0.63$ must miss part of $\varepsilon$, and the program measures the missing part as $16$ %.</p>
+<p>The error in $\varepsilon$ propagates into any quantity normalized by it. The compensated spectrum $\kappa^{5/3}E/(C\varepsilon^{2/3})$ of the $128^3$ field has its maximum $0.978$ when normalized by the shape parameter $\varepsilon=1$, $1.018$ when normalized by the model's dissipation $0.9408$, and $1.144$ when normalized by the grid dissipation $0.7905$. The last two differ by the factor $(0.9408/0.7905)^{2/3}=1.123$. A Kolmogorov constant read from the plateau of an under-resolved field with its own measured $\varepsilon$ is too large by the $-2/3$ power of the resolved fraction of $\varepsilon$: by 12 % here, and by the factor $0.432^{-2/3}=1.75$ on the $64^3$ grid.</p>
+<div class="prop"><p><strong>Proposition 3.6 — a small resolved box has no nominal inertial subrange.</strong> Let $\ell_0$ be the size of the largest eddies and use the nominal limits of <a href="https://az9713.github.io/nptel-essentials-of-turbulence-notes/chapter-14-kolmogorov-model-dissipation-spectra.html#scaling">essentials (14.4)</a>, $\kappa_{EI}=12\pi/\ell_0$ and $\kappa_{DI}=2\pi/(60\eta)$. If the grid satisfies $\kappa_{\max}\eta\ge1.5$ and the box holds the largest eddies, $\ell_0\le\mathcal L$, then $\ell_0/\eta\le2\pi N/3$. A nominal inertial subrange, $\kappa_{EI}\lt\kappa_{DI}$, is the condition $\ell_0/\eta\gt360$, and it then requires $N\gt540/\pi\approx171.9$.</p></div>
+<div class="proof"><p><strong>Proof.</strong> $\kappa_{\max}=\pi N/\mathcal L\ge1.5/\eta$ gives $\mathcal L/\eta\le\pi N/1.5=2\pi N/3$, and $\ell_0\le\mathcal L$ gives the first bound. The condition $12\pi/\ell_0\lt2\pi/(60\eta)$ is $\ell_0/\eta\gt360$. Combining, $360\lt2\pi N/3$, that is $N\gt540/\pi$. <span class="qed">∎</span></p></div>
+<p>The bound $2\pi N/3$ is $134$ for $N=64$ and $268$ for $N=128$, so neither grid can hold a resolved dissipation range and a nominal inertial subrange together. The box criterion (17.11) makes the requirement stricter by the factor $\mathcal L/\ell_0$. The synthetic shape takes the other side of the trade: with $\ell_0=L=1$ it has $\ell_0/\eta=100$ and violates the resolution criterion on both grids, $\kappa_{\max}\eta=0.32$ and $0.64$, with kept shells ending at $\kappa\eta=0.31$ and $0.63$. It represents a field sampled more coarsely than its dissipation range requires, which is the situation of a strided sample (Section 3.7).</p>
+
+<h2 id="three-ranges">3.5 The three ranges are read from compensated and dissipation spectra, not from a fitted slope</h2>
+<p><a href="https://az9713.github.io/nptel-essentials-of-turbulence-notes/chapter-11-energy-spectrum.html#spectrum">Essentials (11.7)</a> gives $E=C\varepsilon^{2/3}\kappa^{-5/3}$ in the inertial subrange, and chapter 14 places the energy-containing range below $\kappa_{EI}$ and the dissipation range above $\kappa_{DI}$. On a measured spectrum these ranges must be identified from the data with stated tolerances. The procedure used here has six steps.</p>
+<ol>
+<li>Compute $E_N(m\kappa_0)$ for $m\le N/2-1$. Attach the per-realization relative uncertainty $N_m^{-1/2}$, or the measured scatter over independent snapshots, and the geometric caveat for $m\lesssim5$.</li>
+<li>Compute $k_N=\sum_m\hat E_m$ and $\varepsilon_N=\sum_m2\nu(m\kappa_0)^2\hat E_m$, the discrete form of (11.3). Report $\kappa_{\max}\eta$, because $\varepsilon_N$ is low when it is small (Section 3.4).</li>
+<li>Form the compensated spectrum $\Psi_m=(m\kappa_0)^{5/3}E_N/\varepsilon_N^{2/3}$ and the local slope $d\ln E/d\ln\kappa$. Define the candidate band as the span from the first to the last shell where $\Psi_m\ge(1-\delta)\max\Psi$, with $\delta=0.05$, the 5 % tolerance of the chapter-14 program, and report how many shells of the span meet the tolerance, because the lattice counts of Proposition 3.4 make $\Psi_m$ jagged at low shells.</li>
+<li>Call the shells below the band the energy-containing range and check that they contain the peak of $E$. Call the shells above it the dissipation range and check that they contain the peak of $D$.</li>
+<li>Report the shares of $k_N$ and $\varepsilon_N$ in the three groups, and compare the band with the nominal limits $\kappa_{EI}$ and $\kappa_{DI}$, stating the assumed $\ell_0$.</li>
+<li>Fit a slope only inside the band, and report it together with the range of the local slope there.</li>
+</ol>
+<p>On the synthetic $64^3$ field the compensated spectrum of Section 3.4, $\kappa^{5/3}E/(C\varepsilon^{2/3})$ with $\varepsilon=1$, is $\Psi_m/C$ apart from the choice of $\varepsilon$, so it selects the same shells. Its maximum is $0.978$ at $m=16$, and the shells within 5 % of that are $m=9,13,14,16,17,18,20,21,25$. The band is therefore the span $m=9,\dots,25$, in which 9 of 17 shells meet the tolerance and the lowest value is $0.852$ at $m=11$. The gaps come from the lattice counts: the model evaluated at the integers has no gaps, with maximum $0.943$ at $m=18$ and $m=11,\dots,26$ within 5 %. A least-squares fit of $\ln E$ against $\ln\kappa$ over the span $m=9,\dots,25$ gives $-1.634$ for the random-phase field, $-1.614$ for one Gaussian realization and $-1.619$ for the model evaluated at the integers. The three fitted slopes lie $0.033$, $0.053$ and $0.048$ from $-5/3$. The local slope of the model, however, runs from $-1.389$ at $m=9$ to $-1.913$ at $m=25$: it crosses $-5/3$ instead of staying at it. The band is the region where the rise of the large-scale factor $f_L$ toward one and the fall of the dissipation factor $f_\eta$ from one cancel in a least-squares sense. The nominal limits agree that it is not an inertial subrange: $\kappa_{DI}=2\pi/(60\eta)=10.5$ lies inside the band, and $\kappa_{EI}=12\pi/\ell_0=37.7$ for $\ell_0=L$ lies above $\kappa_{DI}$, so the nominal inertial subrange is empty: Proposition 3.6 requires $\ell_0/\eta\gt360$, and here $\ell_0/\eta=100$.</p>
+<div class="table-wrap"><table>
+<caption>Table 3.1. Shares of the grid energy and the grid dissipation of the $128^3$ synthetic field in the three groups defined by the span $m=9,\dots,25$ (program, Part 6), beside the nominal-range shares of the model at $\mathrm{Re}_\lambda=453$ from essentials Table 14.3.</caption>
+<thead><tr><th>Group</th><th>Shells</th><th>Share of $k_N$</th><th>Share of $\varepsilon_N$</th><th>Table 14.3: $k$</th><th>Table 14.3: $\varepsilon$</th></tr></thead>
+<tbody>
+<tr><td>below the band</td><td>$m=1,\dots,8$</td><td>0.587</td><td>0.057</td><td>0.889</td><td>0.020</td></tr>
+<tr><td>band</td><td>$m=9,\dots,25$</td><td>0.316</td><td>0.327</td><td>0.076</td><td>0.090</td></tr>
+<tr><td>above the band</td><td>$m=26,\dots,63$</td><td>0.097</td><td>0.616</td><td>0.036</td><td>0.890</td></tr>
+</tbody></table></div>
+<p>The two sets of shares use different definitions, a data-defined band against nominal limits, at Reynolds numbers $47.1$ and $453$; they are set side by side to show the effect of Reynolds number, not as a test. At $\mathrm{Re}_\lambda=47.1$ the band holds about a third of both the energy and the dissipation, while at $453$ the nominal inertial subrange holds less than a tenth of each. The dissipation shares of the synthetic field refer to the grid total. Adding the $0.9408-0.7905=0.1503$ that lies beyond the grid, about $0.68$ of the model's $\varepsilon$ lies above the band. The dissipation spectrum peaks at $m=25$, the top shell of the band, so the check of step 4 fails: the band already carries the peak of the dissipation, a further sign that it is not an inertial subrange.</p>
+<p>The conclusion for evaluation is a reporting rule. A slope near $-5/3$ fitted over a hand-picked band is consistent with an inertial subrange, with the cancellation shown here, and with a mixture of both. The compensated spectrum with its tolerance, the local slope across the band, the position of the peak of $D$, and the nominal limits with a stated $\ell_0$ separate these cases.</p>
+
+<h2 id="windowing">3.6 A non-periodic cutout needs a window, and the window costs resolution</h2>
+<p>Let a cutout of $n^3$ points with spacing $h$ be taken from a larger field. Its box side is $\ell_c=nh$ and its fundamental wavenumber $\kappa_0'=2\pi/\ell_c$. The transform (3.1) treats the cutout as one period of a periodic field, and that periodic extension jumps at the faces wherever the field values at opposite faces differ. The rate at which a jump spreads energy to high wavenumber, called leakage, follows from one dimension.</p>
+<div class="prop"><p><strong>Proposition 3.7 — leakage rate.</strong> Let $f$ be three times continuously differentiable on $[0,\ell]$, let $\kappa_q=2\pi q/\ell$ for a nonzero integer $q$, and let $c_q(f)=\ell^{-1}\int_0^\ell f(x)e^{-i\kappa_qx}\,dx$. Then</p><div class="equation">$$c_q(f)=\frac{f(0)-f(\ell)}{i\kappa_q\ell}+O(\kappa_q^{-2}),\qquad c_q(wf)=O(\kappa_q^{-3})\quad\text{for }w(x)=\sin^2(\pi x/\ell).\tag{3.6}$$</div><p>When $f(0)\ne f(\ell)$, the squared modulus of a coefficient decays like $\kappa^{-2}$ without the window and like $\kappa^{-6}$ with it.</p></div>
+<div class="proof"><p><strong>Proof.</strong> Integrate by parts, using $e^{-i\kappa_q\ell}=1$: $\ell c_q(f)=[f(0)-f(\ell)]/(i\kappa_q)+(i\kappa_q)^{-1}\int_0^\ell f'e^{-i\kappa_qx}\,dx$. A second integration by parts makes the last term $O(\kappa_q^{-2})$, because $f''$ is integrable. For $g=wf$, $g(0)=g(\ell)=0$, and $g'=w'f+wf'$ vanishes at both ends because $w$ and $w'=(\pi/\ell)\sin(2\pi x/\ell)$ do. The first two boundary terms therefore vanish, and a third integration by parts, with $g'''$ integrable, leaves $O(\kappa_q^{-3})$. <span class="qed">∎</span></p></div>
+<p>A dissipation-range spectrum decays faster than any power of $\kappa$, by the exponential factor in (3.5). A $\kappa^{-2}$ leakage floor therefore exceeds the true spectrum above some wavenumber, and a window moves that crossover upward without removing it. The periodic Hann window $w_j=\sin^2(\pi j/n)$ used here also has an exact discrete description.</p>
+<div class="prop"><p><strong>Proposition 3.8 — the Hann window on the grid.</strong> In one direction, $w_j=\tfrac12-\tfrac14e^{2\pi ij/n}-\tfrac14e^{-2\pi ij/n}$, so its discrete coefficients are $\tfrac12$ at $q=0$, $-\tfrac14$ at $q=\pm1$ and zero elsewhere, and $\langle w^2\rangle=\tfrac38$. The windowed coefficient is exactly $\hat c_q=\tfrac12\hat u_q-\tfrac14(\hat u_{q-1}+\hat u_{q+1})$, where $\hat u_q$ is the unwindowed coefficient of the cutout. If the $\hat u_q$ are uncorrelated, then</p><div class="equation">$$\frac{\langle|\hat c_q|^2\rangle}{\langle w^2\rangle}=\frac23\langle|\hat u_q|^2\rangle+\frac16\bigl(\langle|\hat u_{q-1}|^2\rangle+\langle|\hat u_{q+1}|^2\rangle\bigr).\tag{3.7}$$</div><p>In three dimensions the window is the product of three such factors, $\langle w^2\rangle=(3/8)^3=27/512=0.052734$, and the smoothing acts along each axis.</p></div>
+<div class="proof"><p><strong>Proof.</strong> $\sin^2\theta=\tfrac12-\tfrac12\cos2\theta$ with $\theta=\pi j/n$ gives the expansion, and Proposition 3.1 reads off the coefficients. Parseval for the window gives $\langle w^2\rangle=\tfrac14+\tfrac1{16}+\tfrac1{16}=\tfrac38$. The coefficient of a product is the circular convolution of the coefficients, $\widehat{(wu)}_q=\sum_r\hat w_r\hat u_{q-r}$, which follows by inserting the inverse formula for $w$ into the forward transform of $wu$. With three nonzero $\hat w_r$ the convolution has three terms. Squaring and averaging with vanishing cross covariances gives $\tfrac14\langle|\hat u_q|^2\rangle+\tfrac1{16}(\langle|\hat u_{q-1}|^2\rangle+\langle|\hat u_{q+1}|^2\rangle)$; dividing by $\tfrac38$ gives (3.7). <span class="qed">∎</span></p></div>
+<p>The coefficients of a non-periodic cutout are correlated through leakage, so (3.7) is the expected smoothing under an approximation, while the three-term convolution is exact. Dividing by $\langle w^2\rangle$ restores the total energy of an uncorrelated spectrum, because the weights $\tfrac23,\tfrac16,\tfrac16$ sum to one. The price is resolution: each windowed shell is an average over neighboring shells, and the lowest shell is averaged with the cutout mean, which was removed before windowing and contributes nothing.</p>
+<p>The program tests both statements on a separate $128^3$ parent field with $\eta=0.02$, so that the parent reference at the cutout's highest shell, $1.92\times10^{-5}$, lies more than three decades below its value $7.46\times10^{-2}$ at $\kappa=4$ and the leakage floor becomes visible. Each octant of the parent is a contiguous $64^3$ cutout of half the box per side, with $\kappa_0'=2$; the cutout spectra are averaged over the eight octants. A cutout shell at $\kappa$ spans half of parent shell $\kappa-1$, all of shell $\kappa$ and half of shell $\kappa+1$, so the reference is the parent mean $\tfrac14(E_{\kappa-1}+2E_\kappa+E_{\kappa+1})$. Without a window, the ratio of cutout spectrum to that reference is $0.922$, $0.997$, $1.113$, $1.149$, $2.079$ and $14.35$ at $\kappa=2,4,10,20,40,62$. With the Hann window and division by $\langle w^2\rangle=0.05273$ it is $0.740$, $1.050$, $1.185$, $0.977$, $1.008$ and $0.930$. The leakage excess of a factor $14.35$ at the cutout's highest shell is removed. The lowest shell reads 26 % low against the parent and 20 % low against the unwindowed cutout ($0.740/0.922=0.803$), as the smoothing argument predicts in direction. The largest remaining deviation, $1.185$ at $\kappa=10$, is present in the unwindowed ratio $1.113$ too. It is a lattice error of the cutout's shell $m=5$ (Proposition 3.4): the count $N_5=350$ exceeds the shell volume $315.2$, and Part 3 gives a lattice sum $1.07$ times the band integral for the model with $\eta=0.01$. The total energies are $0.7161$ for the parent, $0.7062$ for the unwindowed cutouts and $0.6793$ for the windowed ones. The first difference, $1.4$ % of $k$, is the energy at scales that the cutout sees only as its own mean. The second needs no uncorrelated-coefficient hypothesis to interpret: Proposition 3.1 applied to $wu$ gives $\sum_q|\hat c_q|^2=n^{-3}\sum_jw_j^2u_j^2$, so the normalized Hann total is the weighted variance $\sum_jw_j^2u_j^2/\sum_jw_j^2$. Here $u_j=v_j-\bar v$ is one velocity component $v_j$, of zero ensemble mean and variance $\sigma^2$, less its cutout mean $\bar v$. Without mean removal the expectation of that total would be $\sigma^2$, the variance of a homogeneous field. The mean is removed first, however, and $\langle u_j^2\rangle=\sigma^2-2\operatorname{Cov}(v_j,\bar v)+\operatorname{Var}(\bar v)$ depends on the point $\mathbf x_{\mathbf j}$ through the covariance with $\bar v$, which is largest near the centre. The weights concentrate on that centre: per axis the effective number of points $(\sum w_j^2)^2/\sum w_j^4$ is $18/35=0.51$ of $n$, and $0.51^3=0.14$ of $n^3$ in three dimensions. The Hann total is therefore biased below the unwindowed total, by an amount that grows as the cutout shrinks relative to the integral length. Here the deficit is $3.8$ %, and eight cutouts cannot separate that bias from the larger scatter of a weighted estimate. Section 3.8 measures it on 800 cutouts of side $1.29L_{11}$, where it is 26 %.</p>
+
+<h2 id="striding">3.7 Strided sampling folds unresolved energy onto resolved shells</h2>
+<p>A strided sample keeps every $Q$-th point of an $N^3$ grid in each direction, with the stride $Q$ dividing $N$. The sample $\tilde{\mathbf v}(\mathbf x'_{\mathbf j})=\mathbf v(\mathbf x_{Q\mathbf j})$ lives on an $N'^3$ grid, $N'=N/Q$, of the same box, so it is exactly periodic and needs no window. Its error is of a different kind.</p>
+<div class="prop"><p><strong>Proposition 3.9 — folding.</strong> The coefficients of the strided sample are</p><div class="equation">$$\hat{\tilde{\mathbf v}}_{\mathbf n'}=\sum_{\mathbf n\in\Lambda_N,\ \mathbf n\equiv\mathbf n'\ (\mathrm{mod}\ N')}\hat{\mathbf v}_{\mathbf n},\qquad\mathbf n'\in\Lambda_{N'},\tag{3.8}$$</div><p>where the congruence holds componentwise. If distinct coefficients of $\mathbf v$ are uncorrelated, then $\langle|\hat{\tilde{\mathbf v}}_{\mathbf n'}|^2\rangle=\sum_{\mathbf n\equiv\mathbf n'}\langle|\hat{\mathbf v}_{\mathbf n}|^2\rangle$, and the expected energy of the sample equals that of the parent.</p></div>
+<div class="proof"><p><strong>Proof.</strong> Insert the inverse formula for $\mathbf v$ into the forward transform on the coarse grid. With $\kappa_0x_{Q\mathbf j,i}=2\pi j_i/N'$, the sum over $\mathbf j$ of $e^{2\pi i(\mathbf n-\mathbf n')\cdot\mathbf j/N'}$ is $N'^3$ when $\mathbf n-\mathbf n'$ is componentwise a multiple of $N'$ and zero otherwise, by the geometric-sum argument of Proposition 3.1. This gives (3.8). Squaring (3.8) and averaging removes the cross terms between distinct $\mathbf n$. Every $\mathbf n\in\Lambda_N$ is congruent to exactly one $\mathbf n'\in\Lambda_{N'}$, so summing over $\mathbf n'$ gives $\sum_{\mathbf n}\langle|\hat{\mathbf v}_{\mathbf n}|^2\rangle$, and Proposition 3.1 converts both sides to mean energies. <span class="qed">∎</span></p></div>
+<p>The hypothesis of uncorrelated coefficients is the homogeneity property proved in <a href="https://az9713.github.io/nptel-essentials-of-turbulence-notes/chapter-13-spectral-energy-velocity-spectrum-tensor.html#covariance">essentials chapter 13, section on the covariance of the coefficients</a>. Equation (3.8) is the identity (17.7) of <a href="https://az9713.github.io/nptel-essentials-of-turbulence-notes/chapter-17-dns-pseudo-spectral-methods-cost.html#aliasing">essentials chapter 17</a> applied to sampling instead of to a product. Striding therefore does not lose energy on average. It relocates the energy of every mode above the new Nyquist wavenumber onto the resolved mode congruent to it, and the nearest aliases land on the highest resolved shells.</p>
+<p>Two prefilters are compared. A sharp cube cutoff sets $\hat{\mathbf v}_{\mathbf n}=0$ unless $|n_i|\lt N'/2$ for all $i$ before sampling; each $\mathbf n'$ then receives at most one term of (3.8), and the sample spectrum equals the truncated parent spectrum exactly. A two-point cell average, the mean over each $2\times2\times2$ block before stride 2, is the discrete analog of the top-hat (box) filter. Its transfer function per axis is $(1+e^{i\kappa h})/2$, with modulus $|\cos(\kappa h/2)|$ and $h=\mathcal L/N$; the continuous top-hat of width $\Delta$, the box filter of essentials chapter 19, Table 19.1, has transfer $\sin(\kappa\Delta/2)/(\kappa\Delta/2)$ instead. The cell average attenuates resolved modes and leaves aliases: for $N=128$ the squared transfer along an axis is $\cos^2(31\pi/128)=0.525$ at the resolved $\kappa=31$ and $\cos^2(33\pi/128)=0.475$ at the alias source $\kappa=33$.</p>
+<p>The program samples the $128^3$ parent of Section 3.5 at stride 2. With the sharp prefilter, the sample spectrum matches the truncated parent spectrum to $1.4\times10^{-15}$. Without a prefilter, the ratio of sample to truncated spectrum is $1.001$, $0.999$, $1.008$, $1.088$ and $1.380$ at $m=4,8,16,24,31$. With the cell average it is $0.990$, $0.962$, $0.856$, $0.712$ and $0.658$. The energies are $0.8130$ for the parent, $0.8130$ for the unfiltered sample and $0.7835$ for the truncated reference, so $3.6$ % of the energy was relocated. Of that, 8 % lands on shells 16 to 23, 28 % on shells 24 to 31 and 62 % on the corner shells above 31, which are not reported. An excess that rises toward the Nyquist wavenumber looks like a flattening of the dissipation range. In the evaluation of Chapter 5, aliased reference data could hide a spectral collapse of a generated field or simulate one.</p>
+
+<h2 id="sampling-choice">3.8 On the course DNS the two samples trade coverage against artifacts, and the spectrum has no inertial band</h2>
+<p>The course generates its own data with <a href="labs/dns_isotropic.py">labs/dns_isotropic.py</a>, a pseudo-spectral DNS of forced isotropic turbulence on $N=256$ points per direction in the box $[0,2\pi)^3$, so $\kappa_0=1$. It uses $\nu=0.002$, a time step $0.004$, the cube dealiasing rule $|n_i|\le85$, and a forcing that rescales the modes with $0\lt|\mathbf n|\le2$ to a fixed total energy after every step. It stores 100 snapshots at flow times $t_{\mathrm f}=12,13,\dots,111$, where $t_{\mathrm f}$ is physical time. Over the 496 logged times of that window the means, with their ranges, are $k=0.622$ ($0.561$–$0.679$), $\varepsilon=0.0981$ ($0.0719$–$0.119$), $\mathrm{Re}_\lambda=115$ ($108$–$125$), $\eta=0.0169$ and $\kappa_{\max}\eta=1.44$ ($1.37$–$1.55$) with $\kappa_{\max}=85$, the largest retained wavenumber. The longitudinal integral length is $L_{11}=1.218$, computed from the spectrum. The resolution lies slightly below the $1.5$ of (17.12), and the box, $\mathcal L=5.16L_{11}$, is smaller than the $8L_{11}$ of (17.11). The acceptance check <a href="labs/check_dns.py">labs/check_dns.py</a> finds a mean-flow energy of at most $6.3\times10^{-18}$, a divergent energy of at most $4.1\times10^{-15}$, and no drift in the gradient flatness, whose 20-snapshot means lie between $4.41$ and $4.64$ on the filtered fields. The snapshots occupy 3.6 GB and are not distributed. The program below reads only the published files of <code>data/dns/</code>.</p>
+<p>The simulation saves two kinds of $64^3$ float32 velocity block, each $3\times64^3\times4=3{,}145{,}728$ bytes. Sections 3.2, 3.6 and 3.7 predict their properties.</p>
+<div class="table-wrap"><table>
+<caption>Table 3.2. The two $64^3$ samples of the course DNS. The grid entries are derived; the last two rows are measured by the program below.</caption>
+<thead><tr><th>Property</th><th>Filtered field (<code>filtered/</code>, 100 files)</th><th>Contiguous crop (<code>crop/</code>, 800 files)</th></tr></thead>
+<tbody>
+<tr><td>side, spacing</td><td>$2\pi$, $2\pi/64\approx0.098$</td><td>$64\cdot2\pi/256=\pi/2\approx1.571$ ($1.29L_{11}$), $2\pi/256\approx0.0245$</td></tr>
+<tr><td>$\kappa_0$, grid Nyquist</td><td>1, 32</td><td>4, 128; the solver retains $|\kappa_i|\le85$</td></tr>
+<tr><td>complete shells</td><td>$\kappa=1,\dots,31$</td><td>$\kappa=4,8,\dots,124$ (31 shells of width 4); above $\kappa=84$ only corners of the retained cube contribute</td></tr>
+<tr><td>periodic</td><td>yes</td><td>no: needs mean removal and a window (Section 3.6)</td></tr>
+<tr><td>prefilter or remedy</td><td>sharp cube cutoff $|n_i|\lt32$ of Section 3.7, applied in the solver before the coarser grid; each coefficient receives at most one term of (3.8)</td><td>none exact; the window trades leakage for resolution</td></tr>
+<tr><td>main artifact</td><td>none at retained modes; above $\kappa=31$ only the corners of the cube $|n_i|\lt32$ remain, and every mode outside that cube is absent</td><td>leakage; lowest shells smoothed with the removed mean; energy at scales above the crop removed with that mean</td></tr>
+<tr><td>share of parent $k$, $\varepsilon$ in its range</td><td>complete shells 1–31, $\kappa\eta\le0.53$: $0.9964$, $0.845$; whole field, with cube corners to $\kappa\eta=0.91$, over the four snapshots with stored full fields: $0.9983$, $0.908$</td><td>variance $0.631$ of $k$ unwindowed; $0.997$ of $\varepsilon$ lies in shells up to $\kappa=84$, $\kappa\eta=1.42$</td></tr>
+<tr><td>agreement with the parent spectrum</td><td>to $7.9\times10^{-7}$ in shells 1–31</td><td>with Hann window $0.943$–$1.064$ for $\kappa\ge24$, except $1.173$ at $\kappa=36$</td></tr>
+</tbody></table></div>
+<p>The file <code>data/dns/sampling_spectra.csv</code>, written by <a href="labs/dns_sampling_spectra.py">labs/dns_sampling_spectra.py</a> from the snapshots, holds the sample spectra that the program compares with the parent. A crop shell $m$ spans the parent shells around $\kappa=4m$, so the reference is the parent mean $\tfrac14(\tfrac12E_{\kappa-2}+E_{\kappa-1}+E_\kappa+E_{\kappa+1}+\tfrac12E_{\kappa+2})$. Averaged over all 800 crops, the unwindowed crop spectrum exceeds it by the factors $1.012$, $1.361$, $1.816$, $2.103$, $5.669$, $34.40$ and $148.0$ at $\kappa=4,8,16,20,40,64,84$. That growth is the $\kappa^{-2}$ floor of Proposition 3.7 above a spectrum that falls faster. With the Hann window the ratio at $\kappa=84$ is $1.001$, and it stays within $0.943$–$1.064$ at every crop shell from $\kappa=24$ to $124$ except $\kappa=36$, where it is $1.173$.</p>
+<p>The lowest five crop shells carry errors of another kind: the Hann ratios at $\kappa=4,8,12,16,20$ are $0.675$, $1.448$, $0.955$, $1.229$ and $1.217$. Shell-count error (Proposition 3.4) and the three-point smoothing of Proposition 3.8 act together there. The ratio $N_m/[4\pi(m^2+\tfrac1{12})]$ is $1.32$, $1.21$, $0.86$, $1.04$ and $1.11$ at $m=1,\dots,5$, and it is $1.12$ at $m=9$, the crop shell $\kappa=36$. A crop spectrum therefore gives no usable level below $\kappa=24$. The crop totals show the cost of its size. The unwindowed variance is $0.3924$, or $0.631$ of $k$, because the energy of scales larger than the crop appears as the crop mean and is removed with it. The Hann total is lower still, $0.2889$ or $0.464$ of $k$, the bias described at the end of Section 3.6. A separate check over all 800 crops finds a mean-removed energy per point of $0.26$ in the central $8^3$ block and $0.54$ in the eight corner $8^3$ blocks, and the Hann-weighted mean of that energy is $0.2889$, the Hann total above.</p>
+<p>The filtered fields behave as Proposition 3.9 predicts for a sharp prefilter: over the four snapshots for which the full field was stored, their spectrum matches the parent to $7.9\times10^{-7}$ in shells 1–31, which is the rounding of the seven significant digits in the two published files. Recomputed from the stored float32 arrays, the largest difference in any of the four snapshots is $1.6\times10^{-7}$. Taking every fourth point of the same full fields without a prefilter gives the ratios $1.0015$, $1.0219$, $1.0836$ and $1.2221$ to the filtered spectrum at $m=16,24,28,31$. The pile-up is smaller than the $1.380$ of the synthetic test in Section 3.7, because the DNS spectrum has lost more energy above the new Nyquist wavenumber: outside the cube $|n_i|\lt32$ lies $0.17$ % of $k$ here against $3.6$ % there. The stride-4 sample keeps the parent energy, as (3.8) requires, and the filtered field lacks only that $0.17$ % ($0.166$ % from the unrounded energies): parent $0.6143$, stride-4 sample $0.6143$, filtered field $0.6133$.</p>
+<p>The choice for the laboratory follows. The filtered fields hold $99.83$ % of $k$ and the integral scale, are periodic and carry no sampling artifact, so the course laboratory trains on them (<code>--data filtered</code>). Their shells are complete only up to $\kappa\eta=0.53$, where the parent's shells hold $84.5$ % of $\varepsilon$. The cube corners raise the share in the field to $90.8$ %, so a model trained on them sees the dissipation range above $\kappa\eta=0.53$ only in the corners of the retained cube, up to $\kappa\eta=0.91$, and sees nothing above that. The crops reach $\kappa\eta=1.42$ and hold shells carrying $99.7$ % of $\varepsilon$, but they see no scale above $1.29L_{11}$. The two samples overlap at $4\le\kappa\le31$, and the crop level is usable only in $24\le\kappa\le31$. Two rules apply to both. First, the spectrum of generated samples and of reference samples is computed with the same estimator: the same mean removal, window, shells and normalization. The estimator's own bias then enters both spectra equally, and a difference between them belongs to the model. Second, a model trained on unfiltered stride samples learns aliased statistics, and its high shells are then compared with an aliased reference, so agreement there says nothing about the dissipation range of the flow.</p>
+<p>The range procedure of Section 3.5 now meets a measured spectrum. The six steps give the following, from the mean of $E_N$ over the 100 snapshots.</p>
+<ol>
+<li>Shells $m\le85$ are complete. The scatter of a shell energy over the snapshots is not the $N_m^{-1/2}$ of Proposition 3.5: at $m=1,2,5,20,70$ it is $0.064$, $0.152$, $0.090$, $0.114$ and $0.220$ against $0.236$, $0.127$, $0.053$, $0.014$ and $0.004$. The forcing fixes the energy of the lowest modes, which lowers the scatter at $m=1$. At high shells the excess reaches a factor of 8 at $m=20$ and 55 at $m=70$, so the coefficients of a shell do not fluctuate independently. The snapshots are correlated in time, and Chapter 6 counts about 20 to 43 independent values per shell over shells 1 to 31; at $m=9$ the relative standard error of the mean is about $0.02$.</li>
+<li>$k_N=0.6223$ and $\varepsilon_N=0.09708$, against $\kappa_{\max}\eta=1.44$. Beyond shell 85 lie $1.1\times10^{-5}$ of $k_N$ and $0.24$ % of $\varepsilon_N$. The value $\varepsilon_N$ is 1.1 % below the solver's mean $0.0981$ above, and that gap is not one of time sampling, because the solver's $\varepsilon$ at the 100 snapshot times has mean $0.0982$. The shell sum replaces $|\mathbf n|^2$ by $m^2$. On the four stored full fields the exact sum exceeds the shell sum by 1.1 % to 1.3 %, and on the first of them 71 % of that difference comes from shells $m\le5$.</li>
+<li>The compensated spectrum $\Psi_m$ has its maximum $2.494$ at $m=9$, and no other shell lies within 5 % of it. The jagged shape of $\Psi_m$ at low shells, with $1.86$, $1.39$, $2.04$ at $m=2,3,4$ and $2.16$, $2.49$, $2.11$ at $m=8,9,10$, follows the shell counts of Proposition 3.4: $N_3=98$ is below its shell volume $114.1$ and $N_9=1142$ above its $1018.9$. Multiplying by the volume-to-count ratio, as a diagnostic only because it breaks Proposition 3.2, gives a maximum of $2.283$ at $m=8$ and a band $m=7,8,9$. Neither a band of one shell nor one of three supports a fit. The procedure's answer is that this spectrum has no band.</li>
+<li>Taking the corrected band $m=7,8,9$, the shells below it contain the peak of $E$ at $m=1$, but shell 1 and part of shell 2 are forced, so that peak records the forcing. The peak of $D$ is at $m=9$, $\kappa\eta=0.152$, inside the band, so the check fails as it did on the synthetic field. Ninety percent of $\varepsilon_N$ lies at or below $m=37$, $\kappa\eta=0.627$. Essentials chapter 14 gives $0.26$ and $0.73$ for the model at $\mathrm{Re}_\lambda=600$; the DNS is at $\mathrm{Re}_\lambda=115$ and the two pairs are not a test of each other.</li>
+<li>The shares are in Table 3.3. With $\ell_0=L_{11}=1.218$, the nominal limits are $\kappa_{EI}=31.0$ and $\kappa_{DI}=6.18$, so the nominal inertial subrange is empty: Proposition 3.6 requires $\ell_0/\eta\gt360$, and here $L_{11}/\eta=72$. That result depends on the reading of $\ell_0$; <a href="https://az9713.github.io/nptel-essentials-of-turbulence-notes/chapter-14-kolmogorov-model-dissipation-spectra.html#energy-range">essentials chapter 14, Table 14.4</a>, lists three. With $\ell_0=L=k^{3/2}/\varepsilon=5.00$, the choice of Section 3.5, $L/\eta=295$ and $\kappa_{EI}=7.54$, still above $\kappa_{DI}$. With $\ell_0=6L_{11}=7.31$, which is larger than the box side $2\pi$ and so outside Proposition 3.6, $\kappa_{EI}=2\pi/L_{11}=5.16$, and the nominal range holds the one integer wavenumber $m=6$. No reading gives a band that supports a fit. The cube rule tightens that proposition: with $\kappa_{\max}=N\kappa_0/3$, the bound becomes $N\gt360\cdot3\cdot1.5/(2\pi)=257.8$, so even $\ell_0=\mathcal L$ and $\kappa_{\max}\eta=1.5$ could not provide the range at $N=256$.</li>
+<li>No fit is made inside the band. The temptation is measurable: a least-squares fit over the hand-picked shells $m=4,\dots,12$ gives $-1.699$, which is $0.032$ from $-5/3$. Moving the ends of the band gives $-1.362$ for $m=3,\dots,10$, $-1.873$ for $m=4,\dots,16$, $-1.933$ for $m=5,\dots,15$ and $-2.438$ for $m=8,\dots,20$. Over $m=4,\dots,12$ the local slope runs from $-0.78$ to $-2.74$ raw and from $-1.24$ to $-2.30$ count-corrected.</li>
+</ol>
+<div class="table-wrap"><table>
+<caption>Table 3.3. Shares of $k_N$ and $\varepsilon_N$ of the DNS spectrum in the three groups defined by the count-corrected band.</caption>
+<thead><tr><th>Group</th><th>Shells</th><th>Share of $k_N$</th><th>Share of $\varepsilon_N$</th></tr></thead>
+<tbody>
+<tr><td>below the band</td><td>$m=1,\dots,6$</td><td>0.830</td><td>0.144</td></tr>
+<tr><td>band</td><td>$m=7,8,9$</td><td>0.073</td><td>0.119</td></tr>
+<tr><td>above the band</td><td>$m=10,\dots,85$</td><td>0.096</td><td>0.735</td></tr>
+</tbody></table></div>
+<p>The value of $\Psi$ near its maximum, about $2.2$ to $2.5$, must not be read as Kolmogorov's constant, for the reason of Exercise 3.7: the procedure finds no band of this spectrum over which (11.7) holds. The result fixes what the course data can test. Chapter 5 can use the spectrum at $\mathrm{Re}_\lambda=115$ to study where a generated field departs from its reference, because that test needs a reference, not an inertial subrange. A $-5/3$ law cannot be measured from these data. For comparison, the JHTDB dataset <code>isotropic1024coarse</code> is a forced isotropic DNS on a $1024^3$ grid with $\mathrm{Re}_\lambda=418$, $\eta=0.00280$ and $L_{11}=1.364$ in its README, which gives, with $\ell_0=L_{11}$, $L_{11}/\eta=487$, $\kappa_{EI}=27.6$ and $\kappa_{DI}=37.4$: a nominal subrange of less than one octave, a ratio of $1.35$. The other two readings of step 5 widen it. The README's $k=0.705$ and $\varepsilon=0.103$ give $L=5.75$ and $\kappa_{EI}=6.56$, a ratio of $5.7$ or $2.5$ octaves, and $\ell_0=6L_{11}$ gives $\kappa_{EI}=4.61$, a ratio of $8.1$ or $3.0$ octaves. The same two samples exist for that grid, a contiguous cutout with $\kappa_0=16$ and a stride-16 sample in which each coefficient receives $16^3=4096$ parent coefficients by (3.8), but its data were not analysed here.</p>
+<p>The program <a href="code/ch03_dns_spectrum.py">code/ch03_dns_spectrum.py</a> applies the procedure. It reads <code>params.json</code>, <code>stats.csv</code>, <code>spectrum.csv</code> and <code>sampling_spectra.csv</code> and writes nothing.</p>
+<pre><code class="language-python">"""Read the course DNS output: the range procedure of section 3.5 (ch. 3.8).
+
+Reads only the published files data/dns/params.json, stats.csv, spectrum.csv
+and sampling_spectra.csv (from labs/dns_sampling_spectra.py), not the
+snapshots. Requires Python 3.13 and NumPy. Writes no files.
+"""
+import csv
+import json
+from pathlib import Path
+import numpy as np
+
+DNS = Path(__file__).resolve().parents[1] / "data" / "dns"
+par = json.loads((DNS / "params.json").read_text())
+NU, TOP = par["nu"], par["kmax"]
+
+print("Part 1. Window means of stats.csv, t &gt;= first snapshot")
+rows = list(csv.DictReader(open(DNS / "stats.csv")))
+st = {c: np.array([float(r[c]) for r in rows]) for c in rows[0]}
+win = st["t"] &gt;= par["spinup"] - 1e-9
+for c in ("k", "eps", "urms", "L", "Re_lam", "eta", "kmax_eta", "skew"):
+    x = st[c][win]
+    print(f"  {c:8s} mean {x.mean():.4g}  range {x.min():.4g} .. "
+          f"{x.max():.4g}")
+print(f"  {win.sum()} logged times, N = {par['n']}, nu = {NU}, "
+      f"retained |k_i| &lt;= {TOP}")
+
+print("Part 2. Shell sums, mean over the snapshots of spectrum.csv")
+raw = np.loadtxt(DNS / "spectrum.csv", delimiter=",")
+snaps, e_all = raw[:, 1], raw[:, 2:]
+e = e_all.mean(0)
+m = np.arange(len(e))
+dis = 2 * NU * m**2 * e
+k_n, eps_n = e.sum(), dis.sum()
+eta = (NU**3 / eps_n) ** 0.25
+print(f"  {len(snaps)} snapshots, t = {snaps[0]:.0f} .. {snaps[-1]:.0f}")
+print(f"  k_N = {k_n:.4f}, eps_N = {eps_n:.5f}, eta = {eta:.5f}, "
+      f"kmax*eta = {TOP * eta:.3f}; top occupied shell {m[e &gt; 0].max()}")
+print(f"  beyond shell {TOP}: share of k {e[TOP + 1:].sum() / k_n:.1e}, "
+      f"of eps {dis[TOP + 1:].sum() / eps_n:.4f}")
+q = np.arange(-TOP, TOP + 1)
+kk = q[:, None, None]**2 + q[None, :, None]**2 + q[None, None, :]**2
+nm = np.bincount(np.rint(np.sqrt(kk)).astype(int).ravel())[:TOP + 1]
+vol = 4 * np.pi * (m[:TOP + 1]**2 + 1 / 12)
+print("  m  N_m  N_m^(-1/2)  std/mean over snapshots")
+for s in (1, 2, 3, 5, 9, 20, 40, 70):
+    print(f"  {s:2d} {nm[s]:6d} {nm[s]**-0.5:8.3f}"
+          f" {e_all[:, s].std(ddof=1) / e[s]:10.3f}")
+
+print("Part 3. The range procedure on shells 1 ..", TOP)
+mm = m[1:TOP + 1]
+psi = mm**(5 / 3) * e[1:TOP + 1] / eps_n**(2 / 3)
+fix = vol[1:] / nm[1:]
+pcc = psi * fix
+for name, y in (("raw", psi), ("count-corrected", pcc)):
+    b = mm[y &gt;= 0.95 * y.max()]
+    print(f"  Psi {name}: max {y.max():.3f} at m = {mm[y.argmax()]};"
+          f" within 5 %: m = {b[0]}..{b[-1]}, {len(b)} shell(s)")
+print("  m:   " + " ".join(f"{s:5d}" for s in range(1, 13)))
+print("  Psi: " + " ".join(f"{y:5.2f}" for y in psi[:12]))
+print("  cc:  " + " ".join(f"{y:5.2f}" for y in pcc[:12]))
+d = dis[1:TOP + 1]
+cum = np.cumsum(dis) / eps_n
+print(f"  peak of E at m = {mm[e[1:TOP + 1].argmax()]}; peak of D at m = "
+      f"{mm[d.argmax()]}, kappa*eta = {mm[d.argmax()] * eta:.3f}; 90 % of "
+      f"eps at m = {np.argmax(cum &gt;= 0.9)}, {np.argmax(cum &gt;= 0.9) * eta:.3f}")
+b = mm[pcc &gt;= 0.95 * pcc.max()]
+for name, lo, hi in (("below band", 1, b[0] - 1), ("band", b[0], b[-1]),
+                     ("above band", b[-1] + 1, TOP)):
+    print(f"  {name:10s} m={lo:2d}..{hi:2d}: share of k "
+          f"{e[lo:hi + 1].sum() / k_n:.3f}, of eps "
+          f"{dis[lo:hi + 1].sum() / eps_n:.3f}")
+ell = st["L"][win].mean()
+print(f"  L_11 = {ell:.3f}, L_11/eta = {ell / eta:.0f}; kappa_EI = "
+      f"{12 * np.pi / ell:.1f}, kappa_DI = {2 * np.pi / (60 * eta):.2f}")
+slope = np.gradient(np.log(e[1:TOP + 1]), np.log(mm))
+scc = np.gradient(np.log(e[1:TOP + 1] * fix), np.log(mm))
+print(f"  local slope on m = 4..12: raw {slope[3:12].max():.2f} .. "
+      f"{slope[3:12].min():.2f}; count-corrected {scc[3:12].max():.2f} .. "
+      f"{scc[3:12].min():.2f}")
+for a, b in ((3, 10), (4, 12), (4, 16), (5, 15), (8, 20)):
+    fit = np.polyfit(np.log(m[a:b + 1]), np.log(e[a:b + 1]), 1)[0]
+    print(f"  hand-picked fit m = {a}..{b}: slope {fit:.3f}")
+
+print("Part 4. The two 64^3 samples, sampling_spectra.csv")
+tab = {}
+for r in csv.DictReader(open(DNS / "sampling_spectra.csv")):
+    tab.setdefault(r["kind"], {})[int(r["kappa"])] = float(r["E"])
+wt = np.array([0.5, 1, 1, 1, 0.5]) / 4
+print("  kappa  parent E  rectangle/parent  Hann/parent")
+hann_high = []
+for kap in range(4, 125, 4):
+    ref = (wt * e[kap - 2:kap + 3]).sum()
+    if kap &gt;= 24:
+        hann_high.append(tab["crop_hann"][kap] / ref)
+    if kap in (4, 8, 12, 16, 20, 24, 28, 36, 40, 64, 84, 124):
+        print(f"  {kap:4d} {ref:9.2e} {tab['crop_rect'][kap] / ref:12.3f}"
+              f" {tab['crop_hann'][kap] / ref:12.3f}")
+hann_high.sort()
+print(f"  Hann/parent for kappa &gt;= 24: {hann_high[0]:.3f} .. "
+      f"{hann_high[-2]:.3f}, and {hann_high[-1]:.3f} once")
+k_rect = sum(tab["crop_rect"].values()) * 4
+k_hann = sum(tab["crop_hann"].values()) * 4
+h0 = tab["crop_hann"][0] * 4
+print(f"  k: parent {k_n:.4f}, rectangle {k_rect:.4f} ({k_rect / k_n:.3f}),"
+      f" Hann {k_hann:.4f} ({k_hann / k_n:.3f}), of which shell 0: {h0:.4f}")
+e4 = e_all[:4].mean(0)
+sh, no = tab["stride4_sharp"], tab["stride4_none"]
+miss = max(abs(sh[s] / e4[s] - 1) for s in range(1, 32))
+print(f"  first 4 snapshots: filtered/parent, max rel. diff {miss:.1e}")
+print("  m  stride-4 no prefilter / filtered")
+for s in (8, 16, 24, 28, 31):
+    print(f"  {s:2d} {no[s] / sh[s]:8.4f}")
+print(f"  k: parent {e4.sum():.4f}, stride-4 {sum(no.values()):.4f},"
+      f" filtered {sum(sh.values()):.4f}")
+d4 = (2 * NU * m**2 * e4).sum()
+d_sh = sum(2 * NU * s**2 * x for s, x in sh.items())
+print(f"  whole filtered field: {sum(sh.values()) / e4.sum():.4f} of k, "
+      f"{d_sh / d4:.3f} of eps; cube corners reach kappa*eta = "
+      f"{np.sqrt(3) * 31 * eta:.2f}")
+print(f"  shells 1..31 of the parent hold {e[:32].sum() / k_n:.4f} of k, "
+      f"{dis[:32].sum() / eps_n:.3f} of eps; kappa*eta at 31 = {31 * eta:.2f}")
+print(f"  shells 1..84 hold {dis[:85].sum() / eps_n:.3f} of eps; "
+      f"kappa*eta at 84 = {84 * eta:.2f}")</code></pre>
+<div class="output"><pre>Part 1. Window means of stats.csv, t &gt;= first snapshot
+  k        mean 0.6223  range 0.5606 .. 0.679
+  eps      mean 0.09815  range 0.07187 .. 0.1192
+  urms     mean 0.644  range 0.6113 .. 0.6728
+  L        mean 1.218  range 1.138 .. 1.389
+  Re_lam   mean 115  range 108 .. 125.3
+  eta      mean 0.01693  range 0.0161 .. 0.01827
+  kmax_eta mean 1.439  range 1.368 .. 1.553
+  skew     mean -0.497  range -0.6745 .. -0.3802
+  496 logged times, N = 256, nu = 0.002, retained |k_i| &lt;= 85
+Part 2. Shell sums, mean over the snapshots of spectrum.csv
+  100 snapshots, t = 12 .. 111
+  k_N = 0.6223, eps_N = 0.09708, eta = 0.01694, kmax*eta = 1.440; top occupied shell 147
+  beyond shell 85: share of k 1.1e-05, of eps 0.0024
+  m  N_m  N_m^(-1/2)  std/mean over snapshots
+   1     18    0.236      0.064
+   2     62    0.127      0.152
+   3     98    0.101      0.137
+   5    350    0.053      0.090
+   9   1142    0.030      0.089
+  20   5034    0.014      0.114
+  40  20234    0.007      0.158
+  70  61206    0.004      0.220
+Part 3. The range procedure on shells 1 .. 85
+  Psi raw: max 2.494 at m = 9; within 5 %: m = 9..9, 1 shell(s)
+  Psi count-corrected: max 2.283 at m = 8; within 5 %: m = 7..9, 3 shell(s)
+  m:       1     2     3     4     5     6     7     8     9    10    11    12
+  Psi:  1.17  1.86  1.39  2.04  2.30  2.13  2.18  2.16  2.49  2.11  1.99  2.00
+  cc:   0.89  1.54  1.62  1.96  2.07  2.15  2.23  2.28  2.22  2.12  2.08  2.00
+  peak of E at m = 1; peak of D at m = 9, kappa*eta = 0.152; 90 % of eps at m = 37, 0.627
+  below band m= 1.. 6: share of k 0.830, of eps 0.144
+  band       m= 7.. 9: share of k 0.073, of eps 0.119
+  above band m=10..85: share of k 0.096, of eps 0.735
+  L_11 = 1.218, L_11/eta = 72; kappa_EI = 31.0, kappa_DI = 6.18
+  local slope on m = 4..12: raw -0.78 .. -2.74; count-corrected -1.24 .. -2.30
+  hand-picked fit m = 3..10: slope -1.362
+  hand-picked fit m = 4..12: slope -1.699
+  hand-picked fit m = 4..16: slope -1.873
+  hand-picked fit m = 5..15: slope -1.933
+  hand-picked fit m = 8..20: slope -2.438
+Part 4. The two 64^3 samples, sampling_spectra.csv
+  kappa  parent E  rectangle/parent  Hann/parent
+     4  4.90e-02        1.012        0.675
+     8  1.55e-02        1.361        1.448
+    12  6.80e-03        1.294        0.955
+    16  3.29e-03        1.816        1.229
+    20  1.66e-03        2.103        1.217
+    24  8.83e-04        2.247        1.022
+    28  4.85e-04        2.749        1.032
+    36  1.60e-04        4.608        1.173
+    40  9.52e-05        5.669        0.992
+    64  5.83e-06       34.398        1.060
+    84  8.84e-07      147.971        1.001
+   124  3.80e-09    25024.044        1.064
+  Hann/parent for kappa &gt;= 24: 0.943 .. 1.064, and 1.173 once
+  k: parent 0.6223, rectangle 0.3924 (0.631), Hann 0.2889 (0.464), of which shell 0: 0.0082
+  first 4 snapshots: filtered/parent, max rel. diff 7.9e-07
+  m  stride-4 no prefilter / filtered
+   8   1.0001
+  16   1.0015
+  24   1.0219
+  28   1.0836
+  31   1.2221
+  k: parent 0.6143, stride-4 0.6143, filtered 0.6133
+  whole filtered field: 0.9983 of k, 0.908 of eps; cube corners reach kappa*eta = 0.91
+  shells 1..31 of the parent hold 0.9964 of k, 0.845 of eps; kappa*eta at 31 = 0.53
+  shells 1..84 hold 0.997 of eps; kappa*eta at 84 = 1.42</pre></div>
+
+<h2 id="program">3.9 The program and its output</h2>
+<p>The program <a href="code/ch03_energy_spectrum.py">ch03_energy_spectrum.py</a> implements every synthetic construction of the chapter in eight parts. Part 1 builds the $64^3$ random-phase field of Section 3.3 and checks reality and divergence. Part 2 is the Parseval test, Part 3 the recovery and lattice geometry of Proposition 3.4, and Part 4 the Gaussian scatter over 24 realizations. Part 5 applies the range procedure of Section 3.5 to the $64^3$ field and Part 6 to a $128^3$ field of the same shape, including the resolved shares of Section 3.4. Part 7 is the window test of Section 3.6 and Part 8 the stride test of Section 3.7. Its inputs are set in the code; the random seed is 2026. It reads and writes no files, needs Python 3.13 and NumPy, and took about 16 s on the local CPU, an observation rather than a performance claim. The code passes <code>pycodestyle</code> with no messages.</p>
+<pre><code class="language-python">"""Energy spectrum of a discrete periodic velocity field (chapter 3).
+
+Builds synthetic solenoidal isotropic fields with a prescribed model
+spectrum on a periodic box [0, 2 pi)^3, computes E(kappa) by shell
+summation of numpy.fft.fftn(v) / N**3 (the course convention), checks
+Parseval, recovers the spectrum, fits the slope of the flattest band,
+reads the three ranges, and measures window leakage and stride aliasing.
+Inputs are set below. Output: printed numbers only; no files are read or
+written. Requires Python 3.13 and NumPy.
+"""
+import numpy as np
+
+C, BETA, C_L, C_ETA, P0 = 1.5, 5.2, 6.78, 0.40, 2.0  # essentials (14.10)
+L_INT, ETA, EPS = 1.0, 0.01, 1.0  # shape parameters in box units
+NU = (ETA**4 * EPS) ** (1 / 3)  # from eta = (nu^3 / eps)^(1/4)
+
+
+def e_model(kap, eta=ETA):
+    """Model spectrum (14.9)-(14.10) with prescribed L, eta and eps."""
+    f_l = (kap * L_INT / np.sqrt((kap * L_INT) ** 2 + C_L)) ** (5 / 3 + P0)
+    f_eta = np.exp(-BETA * (((kap * eta) ** 4 + C_ETA**4) ** 0.25 - C_ETA))
+    return C * EPS ** (2 / 3) * kap ** (-5 / 3) * f_l * f_eta
+
+
+def lattice(n):
+    """Integer wavenumber vectors of an n^3 grid on a box of side 2 pi."""
+    q = np.fft.fftfreq(n, 1 / n)
+    return np.stack(np.meshgrid(q, q, q, indexing="ij"))
+
+
+def synth(n, rng, gauss=False, eta=ETA):
+    """Solenoidal field with E/(4 pi kappa^2) per mode, |n| &lt; n/2 - 1/2."""
+    kv = lattice(n)
+    kk = np.sqrt((kv**2).sum(0))
+    keep = (kk &gt; 0) &amp; (kk &lt; n / 2 - 0.5)
+    safe = np.where(keep, kk, 1.0)
+    w = np.fft.fftn(rng.standard_normal((3, n, n, n)), axes=(1, 2, 3))
+    w = w / n**3
+    w = w - kv * (kv * w).sum(0) / safe**2  # projection P(kappa) w
+    target = np.where(keep, e_model(safe, eta) / (4 * np.pi * safe**2), 0)
+    if gauss:
+        amp = np.sqrt(target * n**3)  # &lt;|P w|^2&gt; = 2 / n^3
+    else:
+        norm = np.sqrt((np.abs(w) ** 2).sum(0))
+        amp = np.sqrt(2 * target) / np.where(norm &gt; 0, norm, 1.0)
+    vhat = amp * w
+    v = np.fft.ifftn(vhat, axes=(1, 2, 3)) * n**3
+    return v.real, np.abs(v.imag).max(), vhat, kv
+
+
+def spectrum(v, box=2 * np.pi, window=None):
+    """Shell sums E_m = (1/2) sum |v_hat|^2 over m - 1/2 &lt;= |n| &lt; m + 1/2."""
+    n = v.shape[1]
+    u = v - v.mean(axis=(1, 2, 3), keepdims=True)
+    scale = 1.0
+    if window is not None:
+        u, scale = u * window, (window**2).mean()
+    vhat = np.fft.fftn(u, axes=(1, 2, 3)) / n**3
+    shell = np.rint(np.sqrt((lattice(n) ** 2).sum(0))).astype(int)
+    e = 0.5 * (np.abs(vhat) ** 2).sum(0) / scale
+    k0 = 2 * np.pi / box
+    return np.bincount(shell.ravel(), e.ravel()) / k0, k0
+
+
+def slope_fit(m, e):
+    return np.polyfit(np.log(m), np.log(e), 1)[0]
+
+
+rng = np.random.default_rng(2026)
+print("Part 1. 64^3 random-phase solenoidal field, box 2 pi, kappa_0 = 1")
+v, imag, vhat, kv = synth(64, rng)
+kmag = np.sqrt((kv**2).sum(0))
+amp = np.sqrt((np.abs(vhat) ** 2).sum(0))
+div_x = np.fft.ifftn(1j * (kv * vhat).sum(0)) * 64**3
+grad_rms = np.sqrt((kmag**2 * amp**2).sum())
+print(f"  nu = {NU:.4e}; kappa*eta at shell 31 = {31 * ETA:.2f}")
+print(f"  max|kappa.v_hat| / max(|kappa||v_hat|) = "
+      f"{np.abs((kv * vhat).sum(0)).max() / (kmag * amp).max():.1e}")
+print(f"  max|div v| / rms|grad v| = {np.abs(div_x).max() / grad_rms:.1e}")
+print(f"  max|imag part of inverse FFT| = {imag:.1e}")
+
+print("Part 2. Parseval: (1/2)&lt;v.v&gt; on the grid against the shell sum")
+e64, k0 = spectrum(v)
+k_grid = 0.5 * (v**2).sum(0).mean()
+print(f"  k_grid = {k_grid:.12f}; sum_m E_m kappa_0 = {e64.sum() * k0:.12f}")
+print(f"  relative Parseval error = {abs(e64.sum() * k0 / k_grid - 1):.1e}")
+
+print("Part 3. Recovery: shell sum against the prescribed spectrum")
+kk = np.sqrt((kv**2).sum(0))
+m_of = np.rint(kk).astype(int).ravel()
+inside = ((kk &gt; 0) &amp; (kk &lt; 31.5)).ravel()
+lat = np.bincount(m_of[inside], (e_model(kk.ravel()[inside])
+                                 / (4 * np.pi * kk.ravel()[inside]**2)))
+cnt = np.bincount(m_of[inside])
+print(f"  max |E_m / lattice sum - 1|, m = 1..31: "
+      f"{np.abs(e64[1:32] / lat[1:32] - 1).max():.1e}")
+print("  m  N_m  4pi(m^2+1/12)  lattice/band  count-corrected/band")
+for m in (1, 2, 3, 5, 10, 20, 31):
+    s = np.linspace(m - 0.5, m + 0.5, 2001)
+    band = np.trapezoid(e_model(s), s)
+    vol = 4 * np.pi * (m * m + 1 / 12)
+    print(f"  {m:2d} {cnt[m]:5d} {vol:10.1f} {lat[m] / band:12.4f}"
+          f" {lat[m] * vol / cnt[m] / band:14.4f}")
+
+print("Part 4. Gaussian amplitudes: shell scatter over 24 realizations")
+runs = np.array([spectrum(synth(64, rng, gauss=True)[0])[0][:32]
+                 for _ in range(24)])
+rel = runs.std(axis=0, ddof=1) / runs.mean(axis=0)
+for m in (1, 2, 5, 20):
+    print(f"  m = {m:2d}: measured rel. std {rel[m]:.3f}; "
+          f"N_m^(-1/2) = {cnt[m] ** -0.5:.3f}")
+
+print("Part 5. Flattest band and fitted slope on the 64^3 field")
+mm = np.arange(1, 32)
+comp = mm ** (5 / 3) * e64[1:32] / (C * EPS ** (2 / 3))
+band = mm[comp &gt;= 0.95 * comp.max()]
+a, b = band[0], band[-1]
+sel = slice(a, b + 1)
+inner = comp[a - 1:b]
+print(f"  max of kappa^(5/3)E/(C eps^(2/3)) = {comp.max():.3f}"
+      f" at m = {mm[comp.argmax()]}; span within 5%: m = {a}..{b}")
+print(f"  {len(band)} of {b - a + 1} shells inside 5%: {band.tolist()}; "
+      f"lowest {inner.min():.3f} at m = {a + inner.argmin()}")
+cm = mm ** (5 / 3) * e_model(mm * 1.0) / C
+mb = mm[cm &gt;= 0.95 * cm.max()]
+print(f"  model at integers: max {cm.max():.3f} at m = {mm[cm.argmax()]}; "
+      f"within 5%: m = {mb[0]}..{mb[-1]}, {len(mb)} shells")
+print(f"  fitted slope, random-phase field: "
+      f"{slope_fit(mm[a - 1:b], e64[sel]):.3f}")
+print(f"  fitted slope, one Gaussian field: "
+      f"{slope_fit(mm[a - 1:b], runs[0][sel]):.3f}")
+print(f"  fitted slope, model at integers:  "
+      f"{slope_fit(mm[a - 1:b], e_model(mm[a - 1:b] * 1.0)):.3f}")
+for m in (a, b):
+    loc = (np.log(e_model(m * 1.01)) - np.log(e_model(m / 1.01)))
+    print(f"  local slope of the model at m = {m}: "
+          f"{loc / (2 * np.log(1.01)):.3f}")
+
+print("Part 6. 128^3 parent field: the three ranges")
+p, _, _, _ = synth(128, rng)
+e128, _ = spectrum(p)
+m2 = np.arange(1, 64)
+e2 = e128[1:64]
+eps_grid = (2 * NU * m2**2 * e2).sum()
+s = np.logspace(-4, 3, 200001)
+eps_inf = np.trapezoid(2 * NU * s**2 * e_model(s), s)
+k_inf = np.trapezoid(e_model(s), s)
+print(f"  k: grid {e2.sum():.4f}, model to infinity {k_inf:.4f}")
+print(f"  eps: grid {eps_grid:.4f}, model to infinity {eps_inf:.4f}")
+print(f"  model Re_lambda = {np.sqrt(20 * k_inf**2 / (3 * eps_inf * NU)):.1f}"
+      f"; k^(3/2)/eps = {k_inf**1.5 / eps_inf:.3f}")
+eps64 = (2 * NU * mm**2 * e64[1:32]).sum()
+print(f"  resolved share of model k, eps: 64^3 {e64.sum() / k_inf:.3f},"
+      f" {eps64 / eps_inf:.3f}; 128^3 {e2.sum() / k_inf:.3f},"
+      f" {eps_grid / eps_inf:.3f}")
+peak = (m2 ** (5 / 3) * e2).max() / C
+print(f"  compensated max with eps = 1, eps_model, eps_grid: "
+      f"{peak:.3f}, {peak / eps_inf ** (2 / 3):.3f},"
+      f" {peak / eps_grid ** (2 / 3):.3f}")
+comp2 = m2 ** (5 / 3) * e2 / (C * eps_grid ** (2 / 3))
+band2 = m2[comp2 &gt;= 0.95 * comp2.max()]
+a2, b2 = band2[0], band2[-1]
+print(f"  compensated max {comp2.max():.3f} at m = {m2[comp2.argmax()]};"
+      f" span within 5%: m = {a2}..{b2}, {len(band2)} shells inside; "
+      f"peak of E at m = {m2[e2.argmax()]}")
+print(f"  fitted slope on band {slope_fit(m2[a2 - 1:b2], e2[a2 - 1:b2]):.3f}"
+      f"; eta*kappa at band ends {a2 * ETA:.2f}, {b2 * ETA:.2f}")
+print(f"  nominal kappa_DI = 2 pi/(60 eta) = {2 * np.pi / (60 * ETA):.1f};"
+      f" kappa_EI = 12 pi/L = {12 * np.pi / L_INT:.1f}")
+dis = 2 * NU * m2**2 * e2
+for name, lo, hi in (("below band", 1, a2 - 1), ("band", a2, b2),
+                     ("above band", b2 + 1, 63)):
+    part = slice(lo - 1, hi)
+    print(f"  {name:10s} m={lo:2d}..{hi:2d}: share of k "
+          f"{e2[part].sum() / e2.sum():.3f}, of eps "
+          f"{dis[part].sum() / dis.sum():.3f}")
+print(f"  dissipation spectrum peaks at m = {m2[dis.argmax()]}")
+
+print("Part 7. Eight contiguous 64^3 cutouts (box pi, kappa_0 = 2) of a")
+print("  128^3 parent with eta = 0.02, averaged over the octants")
+q, _, _, _ = synth(128, rng, eta=0.02)
+e_par, _ = spectrum(q)
+hann = np.sin(np.pi * np.arange(64) / 64) ** 2
+win = hann[:, None, None] * hann[None, :, None] * hann[None, None, :]
+octs = [q[:, i:i + 64, j:j + 64, k:k + 64] for i in (0, 64)
+        for j in (0, 64) for k in (0, 64)]
+e_rect = np.mean([spectrum(o, box=np.pi)[0] for o in octs], axis=0)
+e_hann = np.mean([spectrum(o, box=np.pi, window=win)[0] for o in octs],
+                 axis=0)
+print(f"  mean(w^2) of the 3D Hann window = {(win**2).mean():.5f}")
+print("  kappa  parent E  rectangle/parent  Hann/parent")
+for mc in (1, 2, 5, 10, 20, 31):
+    ref = (e_par[2 * mc - 1] + 2 * e_par[2 * mc] + e_par[2 * mc + 1]) / 4
+    print(f"  {2 * mc:4d} {ref:9.2e} {e_rect[mc] / ref:14.3f}"
+          f" {e_hann[mc] / ref:12.3f}")
+print(f"  k: parent {e_par.sum():.4f}, rectangle {e_rect.sum() * 2:.4f},"
+      f" Hann {e_hann.sum() * 2:.4f}")
+
+print("Part 8. Stride-2 64^3 sample of the parent (full domain)")
+ph = np.fft.fftn(p, axes=(1, 2, 3))
+lat128 = lattice(128)
+cube = (np.abs(lat128) &lt; 32).all(0)
+sharp = np.fft.ifftn(ph * cube, axes=(1, 2, 3)).real
+boxed = 0.125 * sum(np.roll(p, (-i, -j, -k), axis=(1, 2, 3))
+                    for i in (0, 1) for j in (0, 1) for k in (0, 1))
+ref, _ = spectrum(sharp[:, ::2, ::2, ::2])
+raw, _ = spectrum(p[:, ::2, ::2, ::2])
+box_e, _ = spectrum(boxed[:, ::2, ::2, ::2])
+true, _ = spectrum(sharp)
+print(f"  sharp prefilter vs truncated parent, max rel. diff: "
+      f"{np.abs(ref[1:32] / true[1:32] - 1).max():.1e}")
+moved = raw - ref
+print(f"  share of the relocated energy: shells 16..23 "
+      f"{moved[16:24].sum() / moved.sum():.2f}, 24..31 "
+      f"{moved[24:32].sum() / moved.sum():.2f}, above 31 "
+      f"{moved[32:].sum() / moved.sum():.2f}")
+print("  m   none/true  box-average/true")
+for m in (4, 8, 16, 24, 31):
+    print(f"  {m:2d} {raw[m] / ref[m]:10.3f} {box_e[m] / ref[m]:12.3f}")
+print(f"  k: parent {0.5 * (p**2).sum(0).mean():.4f}, stride-2 "
+      f"{0.5 * (p[:, ::2, ::2, ::2]**2).sum(0).mean():.4f}, truncated "
+      f"{ref.sum():.4f}")</code></pre>
+<div class="output"><pre>Part 1. 64^3 random-phase solenoidal field, box 2 pi, kappa_0 = 1
+  nu = 2.1544e-03; kappa*eta at shell 31 = 0.31
+  max|kappa.v_hat| / max(|kappa||v_hat|) = 1.3e-15
+  max|div v| / rms|grad v| = 6.7e-16
+  max|imag part of inverse FFT| = 9.3e-16
+Part 2. Parseval: (1/2)&lt;v.v&gt; on the grid against the shell sum
+  k_grid = 0.763833794206; sum_m E_m kappa_0 = 0.763833794206
+  relative Parseval error = 6.7e-16
+Part 3. Recovery: shell sum against the prescribed spectrum
+  max |E_m / lattice sum - 1|, m = 1..31: 5.6e-15
+  m  N_m  4pi(m^2+1/12)  lattice/band  count-corrected/band
+   1    18       13.6       1.2411         0.9387
+   2    62       51.3       1.0865         0.8992
+   3    98      114.1       0.8028         0.9350
+   5   350      315.2       1.0718         0.9652
+  10  1250     1257.7       0.9676         0.9735
+  20  5034     5027.6       0.9993         0.9981
+  31 12146    12077.3       1.0036         0.9979
+Part 4. Gaussian amplitudes: shell scatter over 24 realizations
+  m =  1: measured rel. std 0.200; N_m^(-1/2) = 0.236
+  m =  2: measured rel. std 0.153; N_m^(-1/2) = 0.127
+  m =  5: measured rel. std 0.054; N_m^(-1/2) = 0.053
+  m = 20: measured rel. std 0.015; N_m^(-1/2) = 0.014
+Part 5. Flattest band and fitted slope on the 64^3 field
+  max of kappa^(5/3)E/(C eps^(2/3)) = 0.978 at m = 16; span within 5%: m = 9..25
+  9 of 17 shells inside 5%: [9, 13, 14, 16, 17, 18, 20, 21, 25]; lowest 0.852 at m = 11
+  model at integers: max 0.943 at m = 18; within 5%: m = 11..26, 16 shells
+  fitted slope, random-phase field: -1.634
+  fitted slope, one Gaussian field: -1.614
+  fitted slope, model at integers:  -1.619
+  local slope of the model at m = 9: -1.389
+  local slope of the model at m = 25: -1.913
+Part 6. 128^3 parent field: the three ranges
+  k: grid 0.8130, model to infinity 0.8221
+  eps: grid 0.7905, model to infinity 0.9408
+  model Re_lambda = 47.1; k^(3/2)/eps = 0.792
+  resolved share of model k, eps: 64^3 0.929, 0.432; 128^3 0.989, 0.840
+  compensated max with eps = 1, eps_model, eps_grid: 0.978, 1.018, 1.144
+  compensated max 1.144 at m = 16; span within 5%: m = 9..25, 9 shells inside; peak of E at m = 2
+  fitted slope on band -1.634; eta*kappa at band ends 0.09, 0.25
+  nominal kappa_DI = 2 pi/(60 eta) = 10.5; kappa_EI = 12 pi/L = 37.7
+  below band m= 1.. 8: share of k 0.587, of eps 0.057
+  band       m= 9..25: share of k 0.316, of eps 0.327
+  above band m=26..63: share of k 0.097, of eps 0.616
+  dissipation spectrum peaks at m = 25
+Part 7. Eight contiguous 64^3 cutouts (box pi, kappa_0 = 2) of a
+  128^3 parent with eta = 0.02, averaged over the octants
+  mean(w^2) of the 3D Hann window = 0.05273
+  kappa  parent E  rectangle/parent  Hann/parent
+     2  6.88e-02          0.922        0.740
+     4  7.46e-02          0.997        1.050
+    10  2.81e-02          1.113        1.185
+    20  6.64e-03          1.149        0.977
+    40  3.75e-04          2.079        1.008
+    62  1.92e-05         14.350        0.930
+  k: parent 0.7161, rectangle 0.7062, Hann 0.6793
+Part 8. Stride-2 64^3 sample of the parent (full domain)
+  sharp prefilter vs truncated parent, max rel. diff: 1.4e-15
+  share of the relocated energy: shells 16..23 0.08, 24..31 0.28, above 31 0.62
+  m   none/true  box-average/true
+   4      1.001        0.990
+   8      0.999        0.962
+  16      1.008        0.856
+  24      1.088        0.712
+  31      1.380        0.658
+  k: parent 0.8130, stride-2 0.8130, truncated 0.7835</pre></div>
+<p>The output establishes properties of the estimator on fields constructed to satisfy its assumptions: solenoidal, isotropic, homogeneous and, in the main test, with fixed per-mode energies. It establishes nothing about the non-Gaussian statistics, anisotropy or time correlation of a real turbulent field; Section 3.8 measures only the spectrum of one.</p>
+
+<h2 id="exercises">3.10 Exercises with complete solutions</h2>
+<section class="exercise" id="ex03-1"><h3>Exercise 3.1 — normalization conventions</h3><p>A student computes <code>F = np.fft.fftn(v)</code> without division and reports $\tfrac12\sum_{S_m}|F|^2$ as the shell energy. By what factor does the total differ from $k_N$? Repeat for <code>norm="ortho"</code>. Which errors does the Parseval check of Proposition 3.2 detect, and which does it miss?</p><details><summary>Solution</summary><p>The unnormalized transform is $F=N^3\hat{\mathbf v}$, so the total is $N^6k_N$. With <code>norm="ortho"</code>, $F=N^{3/2}\hat{\mathbf v}$ and the total is $N^3k_N$. The Parseval check detects any global normalization error and any shell set that omits part of $\Lambda_N$. It does not detect a wrong $\kappa_0$ in $E_N=\hat E_m/\kappa_0$, which rescales $E_N$ but not $\sum\hat E_m$, nor a shell assignment that puts every mode in some shell but in the wrong one, for example truncating $|\mathbf n|$ instead of rounding it. A mean left in the field also passes, because the grid energy then includes the mean; it shows up as a nonzero $\hat E_0$. The recovery test with a prescribed spectrum (Part 3) detects the remaining errors.</p></details></section>
+<section class="exercise" id="ex03-2"><h3>Exercise 3.2 — the lowest shell</h3><p>Show that $S_1$ contains 18 lattice vectors. For $E=A\kappa^{-5/3}$ with $\kappa_0=1$, evaluate $\langle\hat E_1\rangle$ from Proposition 3.4, and compare it with $E(1)\kappa_0$ and with the band integral over $[\tfrac12,\tfrac32)$.</p><details><summary>Solution</summary><p>Shell 1 holds the integer vectors with $\tfrac14\le|\mathbf n|^2\lt\tfrac94$, that is $|\mathbf n|^2\in\{1,2\}$. There are 6 vectors with one component $\pm1$ and 12 with two components $\pm1$, so $N_1=18$; the vectors with $|\mathbf n|^2=3$ have $|\mathbf n|=1.732$ and belong to shell 2. Proposition 3.4 gives</p><div class="equation">$$\langle\hat E_1\rangle=A\Bigl[\frac{6}{4\pi}+\frac{12\cdot2^{-5/6}}{4\pi\cdot2}\Bigr]=A(0.4775+0.2680)=0.7454A.$$</div><p>The point value is $E(1)=A$, and the band integral is $\tfrac32A[(1/2)^{-2/3}-(3/2)^{-2/3}]=1.2364A$. The shell sum is 25 % below the first and 40 % below the second. No single wavenumber can be assigned to the lowest shell to better than tens of percent, so it is reported with that caveat and excluded from slope fits.</p></details></section>
+<section class="exercise" id="ex03-3"><h3>Exercise 3.3 — the solenoidal projector</h3><p>Prove that $\mathsf P^2=\mathsf P$, $\mathsf P^{\mathsf T}=\mathsf P$, $\operatorname{tr}\mathsf P=2$ and $\boldsymbol\kappa\cdot\mathsf P\mathbf a=0$. Then suppose the projection is omitted and the Gaussian coefficients are scaled so that $\langle|\hat{\mathbf v}_{\mathbf n}|^2\rangle=A^2$. What fraction of the energy of each mode is longitudinal, that is along $\boldsymbol\kappa$?</p><details><summary>Solution</summary><p>Let $\mathbf e=\boldsymbol\kappa/|\boldsymbol\kappa|$, so $\mathsf P=\mathsf I-\mathbf e\mathbf e^{\mathsf T}$ with $\mathsf I$ the identity. Then $\mathsf P^2=\mathsf I-2\mathbf e\mathbf e^{\mathsf T}+\mathbf e(\mathbf e^{\mathsf T}\mathbf e)\mathbf e^{\mathsf T}=\mathsf P$ because $\mathbf e^{\mathsf T}\mathbf e=1$; symmetry is evident; $\operatorname{tr}\mathsf P=3-1=2$; and $\mathbf e^{\mathsf T}\mathsf P=\mathbf e^{\mathsf T}-\mathbf e^{\mathsf T}=0$. Without projection the three components are independent with equal variance, so $\langle|\hat{\mathbf v}_{\mathbf n}|^2\rangle=3b^2N^{-3}$ for a scale factor $b$, and $A^2$ requires $b^2=N^3A^2/3$. The longitudinal part has $\langle|\mathbf e\cdot\hat{\mathbf v}_{\mathbf n}|^2\rangle=b^2N^{-3}=A^2/3$: one third of the energy of every mode, and its divergence $i\boldsymbol\kappa\cdot\hat{\mathbf v}$ is nonzero. Such a field has the prescribed $E$ but is compressible, so it fails the divergence check of Part 1 while passing Parseval.</p></details></section>
+<section class="exercise" id="ex03-4"><h3>Exercise 3.4 — how large a resolved box must be</h3><p>Using Proposition 3.6, find the smallest $N$ for which a DNS with $\kappa_{\max}\eta\ge1.5$ and box side $\mathcal L=\ell_0$ can contain a nominal inertial subrange. Repeat for $\mathcal L=2\pi\ell_0$, the ratio of the program's box to its $\ell_0=L=1$. State which powers of two suffice.</p><details><summary>Solution</summary><p>The proof gives $\ell_0/\eta\le(\ell_0/\mathcal L)\,2\pi N/3$, and the nominal subrange needs $\ell_0/\eta\gt360$. Hence $N\gt540\,\mathcal L/(\pi\ell_0)$. For $\mathcal L=\ell_0$ this is $N\gt171.9$, so $N\ge172$, and the smallest power of two is 256. For $\mathcal L=2\pi\ell_0$ it is $N\gt1080$, so 1024 does not suffice and 2048 is the smallest power of two. The box criterion $\mathcal L=8L_{11}$ of (17.11) would replace the ratio $\mathcal L/\ell_0$ by a value that depends on how $\ell_0$ relates to $L_{11}$; the bound shows only that the requirement grows linearly with that ratio.</p></details></section>
+<section class="exercise" id="ex03-5"><h3>Exercise 3.5 — aliasing in a stride-4 sample</h3><p>For a stride-4 sample of the $256^3$ DNS, list the integer wavenumbers of one direction that fold onto $q=5$. Suppose, as an assumption for this exercise only, that a one-dimensional signal along a grid line has variance spectrum proportional to $n^{-5/3}$ for $1\le n\le128$, and that the sampled signal represents $n\le31$ exactly. What fraction of the sampled variance sits at wrong wavenumbers? How much does the nearest alias add at $q=31$, and why is the measured ratio of Section 3.8 at $m=31$ smaller?</p><details><summary>Solution</summary><p>By (3.8) with $N'=64$, the indices $n\equiv5\pmod{64}$ in $\{-128,\dots,127\}$ fold onto $q=5$: $5$, $69$, $-59$ and $-123$, four values in all, three of them aliases. The misplaced fraction is</p><div class="equation">$$\frac{\sum_{n=32}^{128}n^{-5/3}}{\sum_{n=1}^{128}n^{-5/3}}=\frac{0.0915}{2.0646}=0.0443,$$</div><p>and the integral approximation $\tfrac32(31.5^{-2/3}-128.5^{-2/3})=0.0915$ reproduces the numerator. About 4 % of the variance is misplaced, but not uniformly: at $q=31$ the nearest alias, $n=33$, folds onto $-31$ and carries $(31/33)^{5/3}=0.901$ times the true value, so the variance at that wavenumber almost doubles. The measured shell ratio at $m=31$ is only $1.2221$. A shell ratio averages over all directions, and only modes near an axis have an alias this close. The DNS spectrum falls much faster than $\kappa^{-5/3}$ at those shells: its local slope near $m=30$ is about $-4$, and shells above 31 hold $0.36$ % of $k$ instead of the $4.4$ % assumed here.</p></details></section>
+<section class="exercise" id="ex03-6"><h3>Exercise 3.6 — what the Hann window does to a peak</h3><p>Derive the three-point weights of (3.7). In one dimension, let the unwindowed spectrum be $\langle|\hat u_q|^2\rangle=1$ at $q=q_0$ and zero elsewhere. What does the normalized Hann spectrum give? Use the result to explain the Hann-to-parent ratio $0.740$ at $\kappa=2$ in Part 7.</p><details><summary>Solution</summary><p>The coefficients of $w$ are $\tfrac12,-\tfrac14,-\tfrac14$ at $q=0,\pm1$, so $\hat c_q=\tfrac12\hat u_q-\tfrac14\hat u_{q-1}-\tfrac14\hat u_{q+1}$. With uncorrelated $\hat u$, $\langle|\hat c_q|^2\rangle=\tfrac14\langle|\hat u_q|^2\rangle+\tfrac1{16}(\langle|\hat u_{q-1}|^2\rangle+\langle|\hat u_{q+1}|^2\rangle)$, and division by $\langle w^2\rangle=\tfrac38$ gives the weights $\tfrac23,\tfrac16,\tfrac16$. A single spectral line becomes $\tfrac23$ at $q_0$ and $\tfrac16$ at each neighbor: the peak loses a third of its height and the total is unchanged. The lowest cutout shell, $\kappa=2$, keeps $\tfrac23$ of its own energy and gains $\tfrac16$ of each neighbor, but the neighbor at $q=0$ holds nothing because the cutout mean was removed before windowing. When its other neighbor carries a comparable energy, the shell therefore reads low by about $\tfrac16$, or 17 %. Part 7 gives $0.740$ against the parent and $0.922$ for the unwindowed cutout, so the window itself costs $1-0.740/0.922=0.20$, or 20 %, and the rest of the 26 % deficit against the parent is the unwindowed ratio. In three dimensions the smoothing also mixes shells 1 and 2, which is why the measured value is not exactly a one-dimensional weight.</p></details></section>
+<section class="exercise" id="ex03-7"><h3>Exercise 3.7 — reading a constant off a plateau</h3><p>From Part 6, a reader reports $C=1.5\times1.144=1.72$ from the compensated maximum normalized by the grid dissipation. Identify two errors in this inference and state what can be concluded.</p><details><summary>Solution</summary><p>First, $\varepsilon_N=0.7905$ is 16 % below the model dissipation $0.9408$, because the grid stops at $\kappa\eta=0.63$. Normalized by $0.9408$ the maximum is $1.018$, a factor $1.123$ smaller. Even then $1.5\times1.018=1.53$ exceeds the model's $C=1.5$. Because $c_L$ and $c_\eta$ are the infinite-Reynolds-number calibrations, the parameter $\varepsilon=1$ in (3.5) differs from the model's own dissipation $0.9408$, and normalizing by the latter multiplies the plateau value $0.978$ by $(1/0.9408)^{2/3}=1.041$. Second, the band is not an inertial subrange: the local slope runs from $-1.389$ to $-1.913$ across it, and the nominal subrange is empty because $\kappa_{EI}=37.7\gt\kappa_{DI}=10.5$. A plateau value of $\kappa^{5/3}E/\varepsilon^{2/3}$ measures Kolmogorov's constant only where (11.7) holds. What can be concluded is that 9 of the 17 shells of the span lie within 5 % of the maximum of the compensated spectrum, and nothing more.</p></details></section>
+<section class="exercise" id="ex03-8"><h3>Exercise 3.8 — how many snapshots</h3><p>Under the Gaussian model of Proposition 3.5, how many independent $64^3$ snapshots are needed to estimate $\hat E_2$ with a relative standard error of at most 5 %? Repeat with the measured scatter $0.152$ of shell 2 in Section 3.8. Why can the 100 stored snapshots of the course DNS not be counted as 100 independent snapshots?</p><details><summary>Solution</summary><p>Shell 2 has $N_2=62$ vectors, so one snapshot has relative standard deviation at least $62^{-1/2}=0.127$. The mean of $M$ independent snapshots has $0.127/\sqrt M$, and $0.127/\sqrt M\le0.05$ requires $M\ge6.45$, so seven snapshots. The measured scatter gives $M\ge(0.152/0.05)^2=9.2$, so ten: the Gaussian model understates the requirement. The stored snapshots are $1.0$ time unit apart, while the velocity field keeps a correlation of $0.603$ at that lag. Snapshots are independent only when separated by more than the correlation time of the statistic. <a href="https://az9713.github.io/nptel-essentials-of-turbulence-notes/chapter-08-random-processes-spectra-and-random-fields.html#time-averages">Essentials (8.17)</a> counts a record of length $T$ as worth $T/(2\bar\tau)$ independent samples, with $\bar\tau$ the integral time scale. Chapter 6 measures that scale and finds about 32 independent values of $\hat E_2$ among the 100, enough for this target: $0.152/\sqrt{32.1}=0.027$.</p></details></section>
+
+<div class="closing"><p>This chapter establishes a discrete energy spectrum, the shell sum (3.3) of coefficients in the course convention, whose total equals the grid kinetic energy exactly and whose expectation is a lattice Riemann sum of the band integral of $E(\kappa)$. It constructs solenoidal isotropic fields with any prescribed spectrum and uses them to separate the estimator's error into lattice geometry, sampling scatter, the box, the Nyquist limit, window leakage and stride aliasing, with a proof or a measurement for each. It gives a procedure for reading the three ranges that does not rely on a fitted slope, and it derives and measures the properties of the two kinds of $64^3$ sample of the course DNS. On that DNS, at $\mathrm{Re}_\lambda=115$, the procedure finds no inertial band, and a slope near $-5/3$ appears only over a hand-picked band.</p><p>It does not establish a $-5/3$ law or a value of Kolmogorov's constant, because these data cannot show either. It does not treat anisotropic or wall-bounded flows, where a shell average discards direction-dependent information that a model evaluation may need. A spectrum is a second-order statistic, so it says nothing about the non-Gaussian statistics that distinguish turbulence from a random field with the same spectrum.</p><p>Chapter 4 uses the transfer functions of filters to connect LES filtering with the heat equation, and the shell spectrum of this chapter is the instrument that shows a filter's effect wavenumber by wavenumber. Chapter 5 uses the same estimator to compare generated and reference spectra and to locate the wavenumber where a generated spectrum leaves the reference. Chapter 6 repays Exercise 3.8 by measuring the time correlation of the course DNS and counting effective independent samples in time and space.</p></div>
+<!-- BOOK-CONTENT-END --></article><nav class="page-turn"><a rel="prev" href="chapter-02-density-as-mass.html">Previous chapter</a><a href="index.html">Index</a><a rel="next" href="chapter-04-filters-heat-and-generation.html">Next chapter</a></nav></main></div><footer class="site-footer">Independent synthesis course built from the author's NPTEL and MIT study editions and primary research papers. Source and review limitations are recorded separately.</footer></body></html>

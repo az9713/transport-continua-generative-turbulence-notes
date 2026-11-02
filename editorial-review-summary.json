@@ -1,0 +1,56 @@
+{
+  "scope": "Exact scientific manuscript acceptances bound to body digests; package and publication evidence are tracked separately. Review reports are not distributed.",
+  "chapters": [
+    {
+      "chapter": 1,
+      "file": "chapter-01-course-map-and-notation.html",
+      "body_sha256": "c634ca32f4a5197ab7db86d9d0b50a1746f9426689fc5505395ed89d4251e8df",
+      "accepted": true,
+      "rounds": 2,
+      "kind": "Independent AI scientific review; each round by a different agent; the accepting agent wrote no fix it accepted"
+    },
+    {
+      "chapter": 2,
+      "file": "chapter-02-density-as-mass.html",
+      "body_sha256": "bcfab30a397e2e4bc04c629633e48fbf8c29a788159fbad67dea69447ab1b1bf",
+      "accepted": true,
+      "rounds": 2,
+      "kind": "Independent AI scientific review; each round by a different agent; the accepting agent wrote no fix it accepted"
+    },
+    {
+      "chapter": 3,
+      "file": "chapter-03-energy-spectra-from-fields.html",
+      "body_sha256": "39f5a803fe54f90b257502afc8270059dda87a7eb220c74803334147e2b3af5b",
+      "accepted": true,
+      "rounds": 3,
+      "kind": "Independent AI scientific review; each round by a different agent; the accepting agent wrote no fix it accepted"
+    },
+    {
+      "chapter": 4,
+      "file": "chapter-04-filters-heat-and-generation.html",
+      "body_sha256": "8b4c77c54c7608d4d626aca3d5e4e342a4c29b1efcd4b6b044e0b2b073511edf",
+      "accepted": true,
+      "rounds": 3,
+      "kind": "Independent AI scientific review; each round by a different agent; the accepting agent wrote no fix it accepted"
+    },
+    {
+      "chapter": 5,
+      "file": "chapter-05-generative-models-of-turbulence.html",
+      "body_sha256": "ce8a55af5365831732c54a684f2006df36e8f4957b5cbb69328b3b995ccc22db",
+      "accepted": true,
+      "rounds": 2,
+      "kind": "Independent AI scientific review; each round by a different agent; the accepting agent wrote no fix it accepted"
+    },
+    {
+      "chapter": 6,
+      "file": "chapter-06-training-data-and-study-design.html",
+      "body_sha256": "eb12790cb1c286cba76d8665fbfe13f68a1174ea5be5074ff5f1cd1f19968690",
+      "accepted": true,
+      "rounds": 3,
+      "kind": "Independent AI scientific review; each round by a different agent; the accepting agent wrote no fix it accepted"
+    }
+  ],
+  "limitations": [
+    "Independent AI reviews do not constitute human expert certification"
+  ]
+}

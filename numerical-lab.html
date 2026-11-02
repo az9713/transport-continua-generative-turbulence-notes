@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark light"><meta name="book-content-sha256" content="cf895bcf97bf87c5872fe463d086ad8097db88265c8a638a99b8e25f000646b3">
+<title>Numerical lab · Transport, Continua and Generative Turbulence</title><link rel="stylesheet" href="assets/book.css">
+<script>window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],['\\[','\\]']],processEscapes:true},svg:{fontCache:'local'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']},startup:{pageReady:()=>MathJax.startup.defaultPageReady().then(()=>{document.documentElement.dataset.mathReady='true';})}};</script>
+<script defer src="assets/mathjax-tex-svg.js"></script><script defer src="assets/book.js"></script></head>
+<body><a class="skip" href="#main">Skip to content</a><header class="site-header"><a class="brand" href="index.html">Transport, Continua and Generative Models of Turbulent Flow</a><nav class="course-nav" aria-label="Book"><a href="index.html">Chapters</a><a href="book-overview.html">Study route</a><a href="source-map.html">Source map</a><a href="references.html">References</a><a href="numerical-lab.html">Numerical lab</a></nav></header>
+<div class="layout no-toc"><main id="main"><div class="reading-tools"><button id="theme-toggle" aria-pressed="false">Light theme</button><button id="text-toggle" aria-pressed="false">Larger text</button><button id="solutions-toggle" aria-pressed="false">Expand solutions</button><button id="print-page">Print with solutions</button></div>
+<article id="chapter-content"><!-- BOOK-CONTENT-START --><h1 id="labs">Numerical laboratories</h1>
+<p class="lead">The chapters derive what a flow-matching model must do. The two laboratories train such models and measure what they actually do. Lab 1 isolates the numerical error of the sampler on a two-dimensional distribution. Lab 2 trains a three-dimensional model on velocity fields and judges the samples with the turbulence statistics of chapters 3 and 5.</p>
+<div class="learning-map"><strong>Software.</strong> Python 3.13, NumPy and PyTorch (tested with PyTorch 2.11.0 and CUDA 12.8). Both labs run on a CPU, but Lab 2 is practical only on a GPU. The optional JHTDB download script needs the separate package <code>givernylocal</code> (tested with 3.6.4).</div>
+<p class="source-note">All outputs on this page come from single runs on one laptop: NVIDIA GeForce RTX 3050 Laptop GPU with 4096 MiB, Intel Core i5-12450H, 31.7 GB RAM, seed 0. Training is stochastic, and other hardware gives different digits. The numbers show what the measurements look like; they are not benchmarks.</p>
+
+<h2 id="lab1">1. Lab 1: flow matching in two dimensions (week 7)</h2>
+<p>The data law is a mixture of eight isotropic Gaussians (standard deviation 0.35) on a circle of radius 4. A three-layer MLP $u_\theta(x,t)$ is trained with the conditional flow-matching loss on the course path $X_t=tz+(1-t)\xi$, whose regression target is $z-\xi$ (MIT 6.S184 chapter 2). Sampling integrates $\dot x=u_\theta(x,t)$ from $t=0$ to $t=1$ with the explicit Euler method.</p>
+<p>The lab separates two errors. The <em>discretisation error</em> is the mean distance between the Euler endpoint with $n$ steps and a reference endpoint with 1024 steps of the same learned field; it measures only the integrator. The <em>distribution error</em> is a sliced 2-Wasserstein distance between 4000 generated points and 4000 data points; it contains the integrator error, the learning error and sampling noise. The sampling noise is estimated by the same distance between two independent data samples.</p>
+<p><a href="labs/lab1_flow_matching_2d.py">Download labs/lab1_flow_matching_2d.py</a> · run time 19 s on the GPU above.</p>
+<div class="output"><pre>iter   600  CFM loss 8.7032
+iter  1200  CFM loss 7.3678
+iter  1800  CFM loss 7.1577
+iter  2400  CFM loss 7.1160
+iter  3000  CFM loss 8.0775
+sliced W2, data vs fresh data, mean of 5: 0.1303
+ steps   h        endpoint err   ratio   sliced W2
+     4  0.25000       0.43817           0.2918
+     8  0.12500       0.21804    2.01   0.1646
+    16  0.06250       0.11189    1.95   0.1168
+    32  0.03125       0.05556    2.01   0.0989
+    64  0.01562       0.02699    2.06   0.0916
+   128  0.00781       0.01262    2.14   0.0910</pre></div>
+<p>The ratio column is close to 2 at every halving of the step $h$, so the discretisation error is proportional to $h$: the first-order rate of the Euler method. The CFM loss does not fall towards zero, and it should not: by MIT 6.S184 chapter 2, Prop. 2.2, it equals the marginal flow-matching loss plus a constant $K$, and $K$ is positive because the target $z-\xi$ is not a function of $X_t$ alone. The distribution error stops falling at about 64 steps. Below that point the integrator dominates; above it the error is no larger than the sampling noise of 4000-point samples (0.13), so this sample size cannot separate the model from the data.</p>
+<details><summary>Exercises for Lab 1</summary>
+<p>(a) Replace Euler with Heun's method and confirm that the ratio column approaches 4. (b) Train for 300 iterations instead of 3000 and explain why the discretisation ratios stay near 2 while the distribution error rises. (c) Increase the sample size to 20000 and find the step count at which the distribution error stops falling.</p>
+</details>
+
+<h2 id="lab2">2. Lab 2: generative turbulence in three dimensions (week 12)</h2>
+<p>The model is a two-level 3D U-Net with 1.42 million parameters (width 32), trained with the same conditional flow-matching loss on velocity fields $X\in\mathbb R^{3\times N^3}$. Each field is divided by the global standard deviation of the training set before training and multiplied back after sampling. Convolutions use circular padding for periodic data and zero padding for non-periodic cutouts. Sampling uses 50 Euler steps.</p>
+<p>The evaluation follows chapter 5: the shell-summed energy spectrum $E(\kappa)$ of 32 generated fields against held-out fields, the ratio of the two spectra in each shell, the departure shell of Section 5.11 (the spectral-collapse detector) for generated and held-out pairs and for a control of held-out pairs, the $L^2$ distance of the log spectra, the standard deviation, skewness and flatness of each velocity component, and the velocity-gradient skewness. The $L^2$ distance of log spectra is the ground distance $d$ that Lienen et al. use inside their Wasserstein metric $W_{2,\mathrm{TKE}}$; it is not that metric, and the lab does not compute that metric.</p>
+<p><a href="labs/lab2_generative_turbulence_3d.py">Download labs/lab2_generative_turbulence_3d.py</a> · default run: synthetic data, $N=32$, 1500 iterations at batch 8, 245 s of training on the GPU above.</p>
+<div class="output"><pre>256 train / 64 test fields of 32^3, std 0.0156
+iter   300  CFM loss 0.6118    49.1 s
+iter   600  CFM loss 0.6263    97.6 s
+iter   900  CFM loss 0.4897   146.3 s
+iter  1200  CFM loss 0.5283   195.5 s
+iter  1500  CFM loss 0.6878   244.8 s
+ kappa     M_n   E_ref        E_gen        gen/ref
+     1      18  2.5569e-05  1.5023e-05    0.588
+     2      62  7.0961e-05  4.7131e-05    0.664
+     3      98  6.0221e-05  4.7922e-05    0.796
+     4     210  6.4668e-05  5.8050e-05    0.898
+     5     350  5.0410e-05  4.7840e-05    0.949
+     6     450  3.0783e-05  3.0342e-05    0.986
+     7     602  2.1262e-05  2.0938e-05    0.985
+     8     762  1.4209e-05  1.4594e-05    1.027
+     9    1142  1.0862e-05  1.2040e-05    1.108
+    10    1250  5.9392e-06  7.0709e-06    1.191
+    11    1458  3.6613e-06  4.4185e-06    1.207
+    12    1814  2.4083e-06  2.7449e-06    1.140
+    13    2178  1.4629e-06  1.4462e-06    0.989
+    14    2498  8.3919e-07  6.7734e-07    0.807
+    15    2622  4.4796e-07  2.9750e-07    0.664
+TKE ref 3.6418e-04  gen 3.1087e-04
+L2 distance of log spectra over 1..15: 0.908
+departure shell, generated vs held-out: 32 of 32 pairs depart, median n_d 14, range 14..14
+departure shell, held-out vs held-out: 0 of 32 pairs depart
+ref: std [0.0156 0.0156 0.0156]  skew [ 0.003  0.016 -0.002]  flatness [3.005 2.978 3.019]  gradient skewness [ 0.007 -0.003  0.002]
+gen: std [0.0146 0.0146 0.014 ]  skew [ 0.022 -0.002  0.018]  flatness [2.995 2.939 2.964]  gradient skewness [ 0.007 -0.007 -0.002]</pre></div>
+<p>The short run reproduces the middle of the spectrum ($\kappa=5$–$13$) to within 21 %, but it has 34 % too little energy in the highest shell ($\kappa=15$) and 41 % too little in the lowest ($\kappa=1$). The high-wavenumber deficit is the onset of the spectral collapse that chapter 5 derives: the small scales carry the least energy, so noise hides them for the longest part of the path, and an undertrained model reproduces them least well. The low-wavenumber deficit probably has other causes, which this run does not separate. Shell 1 contains only a few Fourier modes, so 32 samples estimate it poorly, and a U-Net with two downsampling levels sees box-size structures only through many stacked convolutions. The total kinetic energy is 15 % low. The detector places the departure at shell 14 in all 32 generated pairs and in none of the 32 control pairs, so on these Gaussian fields it separates the two cases, as Section 5.11 intends.</p>
+<p>The synthetic fields are Gaussian by construction, so their skewness is near 0 and their flatness near 3, and the generated fields match. Their gradient skewness is also near 0. Real turbulence is not Gaussian: velocity gradients have negative skewness and flatness above 3. A model trained on DNS fields must be tested on gradient statistics as well as on velocity statistics; the synthetic data cannot test that. Section 4.4 does so.</p>
+<details><summary>Exercises for Lab 2</summary>
+<p>(a) Increase <code>--iters</code> to 6000 and record how the ratio in shells 14–16 changes. (b) Reduce <code>--euler</code> to 10 and separate the change caused by the integrator from the change caused by training. (c) Add the nearest-training-neighbor distance of chapter 6 to the evaluation. (d) Compare the spectra of the filtered fields and the crops of the course DNS before training, using chapter 3.</p>
+</details>
+
+<h2 id="jhtdb">3. Optional: JHTDB cutouts</h2>
+<p>This section is optional, because the course generates its own data (Section 4). It is for a reader who has a database token and wants a higher Reynolds number. <a href="labs/jhtdb_fetch.py">Download labs/jhtdb_fetch.py</a>. The script downloads velocity cubes from the Johns Hopkins Turbulence Database dataset <code>isotropic1024coarse</code> (forced isotropic turbulence, DNS on a $1024^3$ periodic grid) and stores each as an array of shape $(3,N,N,N)$ in the order (component, $x$, $y$, $z$). The client returns the axes in the order $(z,y,x,\text{component})$, and the script transposes them. Successive cubes are taken 100 stored steps apart to reduce their time correlation.</p>
+<p>A personal access token is required for cubes larger than $16^3$. The public testing token allows at most 4096 points per request. Request a token by email from <code>turbulence@lists.johnshopkins.edu</code>, then set it in the environment variable <code>JHTDB_TOKEN</code>. With the testing token the script was run for two $16^3$ cubes; that is enough to test the pipeline, but not to measure an inertial range.</p>
+<div class="output"><pre>python labs/jhtdb_fetch.py --n 64 --count 400 --mode strided
+python labs/lab2_generative_turbulence_3d.py --data npy --dir data/jhtdb --n 64 --batch 4</pre></div>
+<p>At $64^3$, one float32 cube is 3,145,728 bytes, so 400 cubes take 1.26 GB. These commands were not run at that size. Chapter 6 gives the method for counting how many cubes are statistically independent; it measures that count for the course DNS, not for this dataset. Choose <code>--guard</code> from the measured correlation of that dataset.</p>
+
+<h2 id="own-data">4. Generating our own data: grid size and trade-offs</h2>
+<p>The course does not depend on a JHTDB token. It generates its own training data with a pseudo-spectral direct numerical simulation (DNS) of forced isotropic turbulence, <a href="labs/dns_isotropic.py">labs/dns_isotropic.py</a>. Such a simulation has the physics of the JHTDB dataset, but at a lower Reynolds number, and a new simulation gives a different realisation. A larger grid gives a higher Reynolds number and a longer inertial range. It also needs more memory and more time, and the laptop above sets limits on both. This section gives the choice and then what the choice measured.</p>
+
+<h3 id="own-data-1024">4.1 Why $1024^3$ does not fit this machine</h3>
+<p>The figures below are arithmetic estimates, not measurements. One float32 scalar field on $1024^3$ points takes $1024^3\times4$ bytes $=4.29$ GB, which equals the whole memory of the GPU. A pseudo-spectral solver holds the velocity in physical and spectral space, the nonlinear term, and the stages of the time integrator, typically 10 to 20 scalar-field equivalents in total.</p>
+<table>
+<thead><tr><th>Item</th><th>$1024^3$</th><th>This machine</th></tr></thead>
+<tbody>
+<tr><td>One scalar field (float32)</td><td>$1024^3\times4$ B $=4.29$ GB</td><td>GPU memory 4.29 GB (4096 MiB)</td></tr>
+<tr><td>One velocity snapshot (3 components)</td><td>12.9 GB</td><td>240.7 GB free disk, about 18 snapshots</td></tr>
+<tr><td>Solver working memory (10–20 field equivalents)</td><td>about 43–86 GB</td><td>31.7 GB RAM</td></tr>
+<tr><td>Time per step on the CPU</td><td>roughly 40–100 s</td><td>—</td></tr>
+<tr><td>Steps to reach statistically steady turbulence and sample it</td><td>of the order of $10^4$</td><td>roughly 5–12 days of continuous computing, even with enough memory</td></tr>
+</tbody></table>
+<p>The working memory exceeds the RAM by a factor of about 1.4 to 2.7, and the GPU by a factor of about 10 to 20. An out-of-core solver, which keeps part of the data on disk, removes the memory limit but multiplies the run time further. A $1024^3$ simulation is therefore not practical on this machine.</p>
+
+<h3 id="own-data-sizes">4.2 Advantages and disadvantages of each grid size</h3>
+<p>The Taylor-scale Reynolds numbers $Re_\lambda$ in the table are typical values for well-resolved simulations of forced isotropic turbulence, except the $256^3$ row, which this course measured. A larger $Re_\lambda$ means a longer inertial range.</p>
+<table>
+<thead><tr><th>Grid</th><th>Typical $Re_\lambda$</th><th>Advantages</th><th>Disadvantages</th></tr></thead>
+<tbody>
+<tr><td>$64^3$</td><td>about 30</td><td>Seconds per run. The training fields come directly from the simulation.</td><td>Almost no inertial range, so the $-5/3$ slope cannot be tested.</td></tr>
+<tr><td>$128^3$</td><td>about 60</td><td>Fast. A short inertial range is visible.</td><td>The inertial range is still too short to fit a slope reliably.</td></tr>
+<tr><td>$256^3$</td><td>115 measured (108–125)</td><td>Fits the 4 GB GPU: a 40-step test of the final code peaked at 1790 MiB allocated and 2106 MiB reserved. One velocity snapshot is 201 MB.</td><td>2.13 hours for 27,750 steps at 276.5 ms per step. The spectrum has no inertial band (chapter 3, Section 3.8). The fields must be reduced to $64^3$ for training.</td></tr>
+<tr><td>$1024^3$</td><td>about 400 (the JHTDB size)</td><td>A longer inertial range and stronger intermittency.</td><td>Does not fit in memory; days of computing; about 18 snapshots fill the free disk.</td></tr>
+</tbody></table>
+
+<h3 id="own-data-choice">4.3 The choice for this course</h3>
+<p>The course simulates at $256^3$ on the GPU. The $64^3$ training fields are made from the simulation in two ways, which are the two sampling modes of chapter 3. A <em>filtered and downsampled</em> field covers the whole periodic box without aliasing, because a filter removes the unresolved wavenumbers before the grid is coarsened; this is the filtering of week 10 in practice. A <em>contiguous crop</em> keeps the full resolution of a $64^3$ block but is not periodic, so its spectrum needs a window. The published run has 100 snapshots at flow times 12 to 111, with 100 filtered fields and 800 crops. Over that window $k=0.622$, $\varepsilon=0.0981$ and $\kappa_{\max}\eta=1.44$, and <a href="labs/check_dns.py">labs/check_dns.py</a> prints PASS. The cost of the choice is that these data cannot test a $-5/3$ law: chapter 3 applies its range procedure and finds no band. They do serve as a reference for a generated field. The measured integral time is 2.30, so the 100 snapshots hold about 22 independent samples (chapter 6). JHTDB remains a cited comparison.</p>
+
+<h3 id="own-data-run">4.4 Lab 2 on the filtered DNS</h3>
+<p>This is one run of the worked study of chapter 6, Section 6.6: <code>python labs/lab2_generative_turbulence_3d.py --data filtered --batch 2 --iters 30000 --guard 6</code>. The 74 training fields end at flow time 85, the 20 test fields start at flow time 92, and the guard band is 7 time units, where the velocity correlation is 0.047. Training took 3.24 hours; the steps outside one disturbed interval took about 298 ms each.</p>
+<div class="output"><pre>74 train / 20 test fields of 64^3, std 0.6447
+iter  6000  CFM loss 0.2546  1791.0 s
+iter 12000  CFM loss 0.3299  3597.3 s
+iter 18000  CFM loss 0.3466  8116.1 s
+iter 24000  CFM loss 0.2277  9894.6 s
+iter 30000  CFM loss 0.1988  11671.9 s
+ kappa     M_n   E_ref        E_gen        gen/ref
+     1      18  2.4228e-01  1.6004e-01    0.661
+     2      62  1.2383e-01  1.2697e-01    1.025
+     3      98  4.6730e-02  4.8722e-02    1.043
+     4     210  4.1841e-02  4.0410e-02    0.966
+     5     350  3.2632e-02  3.0221e-02    0.926
+     6     450  2.2217e-02  2.1325e-02    0.960
+     7     602  1.7502e-02  1.7297e-02    0.988
+     8     762  1.3979e-02  1.4030e-02    1.004
+     9    1142  1.3175e-02  1.3382e-02    1.016
+    10    1250  9.3271e-03  9.3218e-03    0.999
+    11    1458  7.4469e-03  7.1756e-03    0.964
+    12    1814  6.4545e-03  5.9690e-03    0.925
+    13    2178  5.4663e-03  4.7406e-03    0.867
+    14    2498  4.4597e-03  3.7622e-03    0.844
+    15    2622  3.4153e-03  2.8628e-03    0.838
+    16    3338  3.2139e-03  2.6623e-03    0.828
+    17    3722  2.6472e-03  2.2012e-03    0.832
+    18    4170  2.2148e-03  1.8635e-03    0.841
+    19    4358  1.7506e-03  1.5006e-03    0.857
+    20    5034  1.5564e-03  1.3495e-03    0.867
+    21    5714  1.3510e-03  1.1826e-03    0.875
+    22    5982  1.1010e-03  9.6466e-04    0.876
+    23    6602  9.5633e-04  8.3685e-04    0.875
+    24    7130  8.0931e-04  7.1248e-04    0.880
+    25    8034  7.2018e-04  6.2623e-04    0.870
+    26    8606  6.1279e-04  5.2976e-04    0.865
+    27    9066  5.1400e-04  4.4459e-04    0.865
+    28    9962  4.5360e-04  3.8942e-04    0.858
+    29   10550  3.8690e-04  3.3130e-04    0.856
+    30   11226  3.3413e-04  2.8524e-04    0.854
+    31   12146  2.9491e-04  2.5294e-04    0.858
+TKE ref 6.1074e-01  gen 5.2354e-01
+L2 distance of log spectra over 1..31: 0.801
+departure shell, generated vs held-out: 24 of 32 pairs depart, median n_d 13, range 11..30
+departure shell, held-out vs held-out: 9 of 10 pairs depart, median n_d 14, range 8..24
+ref: std [0.5706 0.6965 0.6409]  skew [ 0.05   0.112 -0.041]  flatness [2.856 2.647 2.686]  gradient skewness [-0.413 -0.424 -0.424]
+gen: std [0.6276 0.581  0.5613]  skew [-0.059 -0.003 -0.085]  flatness [2.762 2.824 2.872]  gradient skewness [-0.296 -0.346 -0.33 ]</pre></div>
+<p>The chapter fixed three claims before the results of this run were read. Claim (i), the mean spectrum within a factor 1.25 in all shells 1–31, fails at shell 1 and holds in the other 30 shells. Shell 1 has the ratio $0.661$, a log ratio of $-0.414$, about 16 times the $0.025$ standard error of the reference there, so the deficit is not reference scatter. It holds 40 % of the reference kinetic energy and accounts for almost all of the 14 % deficit in the total, $0.5235$ against $0.6107$. Shell 1 and part of shell 2 are the forced modes, and a U-Net with two downsampling levels sees box-size structures only through many stacked convolutions; this run does not separate these two possible causes. In shells 2–12 the ratio lies between $0.925$ and $1.043$. In shells 13–31 it lies between $0.828$ and $0.880$ and does not fall toward the top shell, so this is a steady deficit and not the growing deficit of a spectral collapse.</p>
+<p>Claim (ii) has two parts. The flatness averaged over the three components, here from the moments that Lab 2 pools over the fields, is $2.730$ for the reference and $2.819$ for the generated fields, within the tolerance of 0.2. The gradient skewness is $-0.296$, $-0.346$, $-0.330$ against $-0.413$, $-0.424$, $-0.424$: the differences are $0.117$, $0.078$ and $0.094$, so one direction exceeds the tolerance of 0.1. The generated fields do carry negative gradient skewness, which the Gaussian fields of Section 2 do not, at about three quarters of the reference value. Claim (iii), memorization, was not computed, because Lab 2 does not compute it. As a whole, the claim of the study is not supported by this run.</p>
+<p>The detector does not separate the two cases on these data. The generated fields depart in 24 of 32 pairs, with median shell 13, but the control also departs, in 9 of 10 pairs of held-out fields, with median shell 14. The tolerance of chapter 5, Section 5.11, is three standard deviations of the Gaussian scatter, $6/\sqrt{M_n}$, and chapter 3, Section 3.8, measures that the scatter of a real shell energy is much larger: at shell 20 it is $0.114$ per field against the Gaussian $0.014$. On a real flow the control is therefore necessary, and a tolerance must come from the measured scatter. The detector's result on Gaussian fields in Section 2 stands.</p>
+<details><summary>Exercises for the DNS run</summary>
+<p>(a) Replace the tolerance in <code>departure()</code> by three standard deviations of the log ratio, computed from the shell energies of <code>data/dns/spectrum.csv</code>, and repeat the comparison with the control. (b) Run on <code>--data crop --guard 48</code> and compare the top shells with chapter 3, Table 3.2. (c) Add a third downsampling level and record what changes at shell 1. (d) Write the nearest-neighbor test of chapter 6 and complete claim (iii).</p>
+</details>
+<!-- BOOK-CONTENT-END --></article></main></div><footer class="site-footer">Independent synthesis course built from the author's NPTEL and MIT study editions and primary research papers. Source and review limitations are recorded separately.</footer></body></html>

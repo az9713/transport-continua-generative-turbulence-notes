@@ -1,0 +1,487 @@
+{
+  "sections": [
+    {
+      "anchor": "course-map",
+      "lecture_material": "Route of course spec section 4; chapter titles and anchors of the linked source chapters",
+      "extension": "none",
+      "construction": "Partition of the 14 weeks into four parts; week-by-week dependency argument",
+      "chapter": "chapter-01-course-map-and-notation.html"
+    },
+    {
+      "anchor": "prerequisites",
+      "lecture_material": "Audience statement of the course spec",
+      "extension": "none",
+      "construction": "Seven-question self-test with solutions",
+      "chapter": "chapter-01-course-map-and-notation.html"
+    },
+    {
+      "anchor": "notation",
+      "lecture_material": "Course notation table of the spec, checked against IITM ch. 7-10, Kanpur ch. 3-4, MIT ch. 1-3, essentials ch. 8, 11, 19, modeling ch. 20",
+      "extension": "none",
+      "construction": "Explanation of the four clocks, two velocities, two densities and kappa versus k",
+      "chapter": "chapter-01-course-map-and-notation.html"
+    },
+    {
+      "anchor": "conflicts",
+      "lecture_material": "IITM ch. 7-10; Kanpur ch. 3-4; MIT ch. 2-3; essentials and modeling dissipation symbols",
+      "extension": "none",
+      "construction": "Conflict table, including MIT ch. 3 rho_tau and Kanpur Omega found during this chapter, rows 14-19 (MIT xi, lag s, tau, U/u/v, L and script L, Laplacian Delta) added in round 1 review, row 18 corrected and row 20 (kappa_c) added in round 2 review; X/V translation",
+      "chapter": "chapter-01-course-map-and-notation.html"
+    },
+    {
+      "anchor": "fourier",
+      "lecture_material": "essentials (8.29)-(8.33), (19.7)-(19.9), Table 19.1; modeling 20.1-20.4; essentials ch. 17 aliasing-test program normalization",
+      "extension": "none",
+      "construction": "Propositions 1.1-1.3 with proofs; Gaussian worked conversion; discrete convention",
+      "chapter": "chapter-01-course-map-and-notation.html"
+    },
+    {
+      "anchor": "fourier-code",
+      "lecture_material": "none",
+      "extension": "none",
+      "construction": "Program code/ch01_fourier_conventions.py and its interpretation",
+      "chapter": "chapter-01-course-map-and-notation.html"
+    },
+    {
+      "anchor": "outcomes",
+      "lecture_material": "Outcome list of course spec section 3",
+      "extension": "none",
+      "construction": "Assignment of each outcome to an assessing week",
+      "chapter": "chapter-01-course-map-and-notation.html"
+    },
+    {
+      "anchor": "exercises",
+      "lecture_material": "Symbols and equations of the linked chapters",
+      "extension": "none",
+      "construction": "Seven exercises with complete solutions",
+      "chapter": "chapter-01-course-map-and-notation.html"
+    },
+    {
+      "anchor": "two-ledgers",
+      "lecture_material": "IITM ch10 (10.4), (10.8); Kanpur ch04 (4.16)-(4.17); MIT ch01 1.3, ch02 2.5",
+      "extension": "none",
+      "construction": "mass/probability dictionary (Table 2.1)",
+      "chapter": "chapter-02-density-as-mass.html"
+    },
+    {
+      "anchor": "hypotheses",
+      "lecture_material": "MIT ch01 Proposition 1.1 and 1.3; IITM ch09 (9.10)",
+      "extension": "Teschl Theorem 2.10, case k=1: method of the proof; its statement assumes joint C^k",
+      "construction": "hypotheses (H), the reduction to MIT Proposition 1.1, and Lemma 2.0 proved under (H)",
+      "chapter": "chapter-02-density-as-mass.html"
+    },
+    {
+      "anchor": "jacobi",
+      "lecture_material": "IITM ch10 (10.4), three dimensions",
+      "extension": "none",
+      "construction": "Jacobi's formula in d dimensions with adjugate; Corollary 2.2 and the bounds on J",
+      "chapter": "chapter-02-density-as-mass.html"
+    },
+    {
+      "anchor": "change-of-variables",
+      "lecture_material": "IITM ch10 (10.8); MIT ch01 1.5",
+      "extension": "none",
+      "construction": "Proposition 2.3, d-dimensional pushforward density",
+      "chapter": "chapter-02-density-as-mass.html"
+    },
+    {
+      "anchor": "log-density",
+      "lecture_material": "Kanpur ch04 (4.17)",
+      "extension": "Chen et al. 2018 Theorem 1 (instantaneous change of variables)",
+      "construction": "Proposition 2.4, log-density ODE without differentiability of p0",
+      "chapter": "chapter-02-density-as-mass.html"
+    },
+    {
+      "anchor": "eulerian",
+      "lecture_material": "MIT ch02 2.5 (1D identity); Kanpur ch04 (4.16); IITM ch10 (10.8)",
+      "extension": "Teschl Theorems 2.10 and 6.1: second-order regularity of the flow, quoted without proof",
+      "construction": "Proposition 2.5, d-dimensional equivalence",
+      "chapter": "chapter-02-density-as-mass.html"
+    },
+    {
+      "anchor": "weak-form",
+      "lecture_material": "MIT ch02 Proposition 2.1; Kanpur ch04 jump failure",
+      "extension": "uniqueness of weak solutions, quoted without proof from Ambrosio and Crippa Theorems 9 and 12 and Remark 7",
+      "construction": "Proposition 2.6 for a deterministic field and any initial law",
+      "chapter": "chapter-02-density-as-mass.html"
+    },
+    {
+      "anchor": "linear-gaussian",
+      "lecture_material": "MIT ch01 1.5 scalar affine case",
+      "extension": "none",
+      "construction": "Proposition 2.7, Eulerian check, triangular time-dependent example",
+      "chapter": "chapter-02-density-as-mass.html"
+    },
+    {
+      "anchor": "conditional-path",
+      "lecture_material": "MIT ch02 2.3 conditional field (forward reference, week 6)",
+      "extension": "none",
+      "construction": "divergence, J and log-density of the straight conditional path; numerical endpoint failure",
+      "chapter": "chapter-02-density-as-mass.html"
+    },
+    {
+      "anchor": "likelihood",
+      "lecture_material": "MIT ch01 1.5 mention of Chen et al.",
+      "extension": "Chen et al. 2018 Section 4; Grathwohl et al. Section 3.1 Hutchinson estimator",
+      "construction": "Propositions 2.8 and 2.9 (variances derived); Jensen bias of the density estimate",
+      "chapter": "chapter-02-density-as-mass.html"
+    },
+    {
+      "anchor": "failures",
+      "lecture_material": "MIT ch01 1.3 non-uniqueness and ReLU corners; Kanpur ch04 jump",
+      "extension": "none",
+      "construction": "Proposition 2.10; kink and collapse counterexamples",
+      "chapter": "chapter-02-density-as-mass.html"
+    },
+    {
+      "anchor": "program",
+      "lecture_material": "none",
+      "extension": "none",
+      "construction": "code/ch02_density_as_mass.py and its output",
+      "chapter": "chapter-02-density-as-mass.html"
+    },
+    {
+      "anchor": "exercises",
+      "lecture_material": "MIT ch02 2.4 running bridge (Exercise 2.3)",
+      "extension": "none",
+      "construction": "seven exercises with complete solutions",
+      "chapter": "chapter-02-density-as-mass.html"
+    },
+    {
+      "anchor": "references",
+      "lecture_material": "none",
+      "extension": "none",
+      "construction": "evidence boundaries",
+      "chapter": "chapter-02-density-as-mass.html"
+    },
+    {
+      "anchor": "discrete-field",
+      "lecture_material": "essentials ch08 (8.29); ch13 (13.10); ch17 (17.5)",
+      "extension": "none",
+      "construction": "course discrete convention and Proposition 3.1 (orthogonality, Parseval) with proof",
+      "chapter": "chapter-03-energy-spectra-from-fields.html"
+    },
+    {
+      "anchor": "shell-sum",
+      "lecture_material": "essentials ch08 (8.32)-(8.34); ch11 (11.2); ch12 mode-energy; ch13 shells; ch17 (17.6), (17.9)-(17.10)",
+      "extension": "none",
+      "construction": "shell estimator (3.3), Propositions 3.2-3.4 with proofs, lattice-count error measured",
+      "chapter": "chapter-03-energy-spectra-from-fields.html"
+    },
+    {
+      "anchor": "synthetic-field",
+      "lecture_material": "essentials ch14 (14.9)-(14.12); ch13 shells N^(-1/2) estimate",
+      "extension": "none",
+      "construction": "random-phase and Gaussian solenoidal field, Proposition 3.5 with proof, program Parts 1-4",
+      "chapter": "chapter-03-energy-spectra-from-fields.html"
+    },
+    {
+      "anchor": "box-and-nyquist",
+      "lecture_material": "essentials ch17 (17.11)-(17.12); ch14 dissipation and (14.4)",
+      "extension": "none",
+      "construction": "resolved shares of k and eps, eps bias of the compensated spectrum, Proposition 3.6 with proof",
+      "chapter": "chapter-03-energy-spectra-from-fields.html"
+    },
+    {
+      "anchor": "three-ranges",
+      "lecture_material": "essentials ch11 (11.7); ch14 (14.4), Table 14.3",
+      "extension": "none",
+      "construction": "six-step range-reading procedure, slope-fit counterexample, Table 3.1",
+      "chapter": "chapter-03-energy-spectra-from-fields.html"
+    },
+    {
+      "anchor": "windowing",
+      "lecture_material": "none",
+      "extension": "none",
+      "construction": "Propositions 3.7 (leakage rate) and 3.8 (Hann on the grid) with proofs, program Part 7",
+      "chapter": "chapter-03-energy-spectra-from-fields.html"
+    },
+    {
+      "anchor": "striding",
+      "lecture_material": "essentials ch17 (17.7); ch13 covariance; ch19 Table 19.1 box transfer",
+      "extension": "none",
+      "construction": "Proposition 3.9 (folding) with proof, sharp and cell-average prefilters, program Part 8",
+      "chapter": "chapter-03-energy-spectra-from-fields.html"
+    },
+    {
+      "anchor": "sampling-choice",
+      "lecture_material": "none",
+      "extension": "course DNS labs/dns_isotropic.py and its published output in data/dns/; JHTDB isotropic1024coarse README as a cited comparison (not queried)",
+      "construction": "Table 3.2 and Table 3.3; the section 3.5 range procedure applied to the measured spectrum; measured crop and stride spectra; code/ch03_dns_spectrum.py and its output",
+      "chapter": "chapter-03-energy-spectra-from-fields.html"
+    },
+    {
+      "anchor": "program",
+      "lecture_material": "none",
+      "extension": "none",
+      "construction": "code/ch03_energy_spectrum.py and its output (synthetic fields)",
+      "chapter": "chapter-03-energy-spectra-from-fields.html"
+    },
+    {
+      "anchor": "exercises",
+      "lecture_material": "none",
+      "extension": "none",
+      "construction": "eight exercises with complete solutions",
+      "chapter": "chapter-03-energy-spectra-from-fields.html"
+    },
+    {
+      "anchor": "families",
+      "lecture_material": "essentials ch19 Table 19.1, (19.2)-(19.3), (19.9); modeling 20.1",
+      "extension": "none",
+      "construction": "Definition 4.1 of semigroup and heat semigroup families; Fourier-convention mapping",
+      "chapter": "chapter-04-filters-heat-and-generation.html"
+    },
+    {
+      "anchor": "heat-kernel",
+      "lecture_material": "none",
+      "extension": "Rissanen et al. 2023 PDE (1), solution (2), sigma_B^2 = 2t; infinite-plane qualifier read in the ar5iv HTML",
+      "construction": "Proposition 4.1 with proof; Neumann-periodic even-extension mapping",
+      "chapter": "chapter-04-filters-heat-and-generation.html"
+    },
+    {
+      "anchor": "width-time",
+      "lecture_material": "essentials ch19 Table 19.1, Exercise 3(a), Exercise 4 (12.95 mm Gaussian width)",
+      "extension": "none",
+      "construction": "Corollary 4.2 Delta^2 = 24 nu s; Worked example 4.1 heat time of the jet filter",
+      "chapter": "chapter-04-filters-heat-and-generation.html"
+    },
+    {
+      "anchor": "composition",
+      "lecture_material": "essentials ch19 Exercise 3(a); modeling 20.4 combined width",
+      "extension": "none",
+      "construction": "Proposition 4.3 with proof; numerical check",
+      "chapter": "chapter-04-filters-heat-and-generation.html"
+    },
+    {
+      "anchor": "which-families",
+      "lecture_material": "essentials ch19 Table 19.1, (19.20); modeling 20.2-20.4 double box and projection",
+      "extension": "none",
+      "construction": "Proposition 4.4 classification with proofs; fractional generators of Cauchy and Pao",
+      "chapter": "chapter-04-filters-heat-and-generation.html"
+    },
+    {
+      "anchor": "backward",
+      "lecture_material": "none",
+      "extension": "none",
+      "construction": "Proposition 4.5 ill-posedness; N-independent Nyquist amplification; numerical inversion",
+      "chapter": "chapter-04-filters-heat-and-generation.html"
+    },
+    {
+      "anchor": "noise",
+      "lecture_material": "MIT ch03 3.2-3.3 posterior mean and regression projection",
+      "extension": "Rissanen et al. 2023 equations (3)-(4), sigma, delta/sigma, K; noise-free targets of Algorithm 1 read in the ar5iv HTML",
+      "construction": "Proposition 4.6 per-mode gain bound under a Gaussian prior",
+      "chapter": "chapter-04-filters-heat-and-generation.html"
+    },
+    {
+      "anchor": "orderings",
+      "lecture_material": "MIT ch03 3.4 Gaussian noise path",
+      "extension": "Rissanen et al. 2023 PSD 1/f^alpha and spectral statements; coarse-to-fine statement read in the ar5iv HTML",
+      "construction": "Per-mode SNR for noise and blur orderings, crossover laws, band ratios",
+      "chapter": "chapter-04-filters-heat-and-generation.html"
+    },
+    {
+      "anchor": "deconvolution",
+      "lecture_material": "essentials ch19 Pope (2004) h/Delta report",
+      "extension": "Stolz and Adams 1999 abstract (bibliographic data checked on Crossref; body not read)",
+      "construction": "Proposition 4.7 van Cittert truncation analysis; posterior-mean energy deficit",
+      "chapter": "chapter-04-filters-heat-and-generation.html"
+    },
+    {
+      "anchor": "implementation",
+      "lecture_material": "none",
+      "extension": "none",
+      "construction": "code/ch04_heat_filter.py and its recorded output",
+      "chapter": "chapter-04-filters-heat-and-generation.html"
+    },
+    {
+      "anchor": "exercises",
+      "lecture_material": "none",
+      "extension": "none",
+      "construction": "Exercises 4.1-4.8 with solutions",
+      "chapter": "chapter-04-filters-heat-and-generation.html"
+    },
+    {
+      "anchor": "references",
+      "lecture_material": "none",
+      "extension": "none",
+      "construction": "Source list and evidence boundaries",
+      "chapter": "chapter-04-filters-heat-and-generation.html"
+    },
+    {
+      "anchor": "marginal-target",
+      "lecture_material": "Lienen et al. 2024 (arXiv 2306.01776), Section 4.1, Eqs. 2-3",
+      "extension": "Stationary time-average variance and integral time (Proposition 5.1)",
+      "construction": "Proof of Proposition 5.1; link to effective sample counts",
+      "chapter": "chapter-05-generative-models-of-turbulence.html"
+    },
+    {
+      "anchor": "ergodicity-limits",
+      "lecture_material": "Lienen et al. 2024 (arXiv 2306.01776), Sections 4.1, 6.2, 6.4, Appendix A; MIT ch03 Section 3.7",
+      "extension": "Four failure modes of the ergodic marginal; geometry generalization vs ergodicity",
+      "construction": "Worked example 5.1 (two-state process); worked example 5.2 (reference spacing)",
+      "chapter": "chapter-05-generative-models-of-turbulence.html"
+    },
+    {
+      "anchor": "turbdiff-design",
+      "lecture_material": "Lienen et al. 2024 (arXiv 2306.01776), Sections 4.3-4.4, 6.1, Appendices A, D, F",
+      "extension": "Notation translation; LES-resolved range caveat; conditional generation via cell types and inpainting; homogeneity limitation; schedule read from turbdiff/models/ddpm.py",
+      "construction": "none",
+      "chapter": "chapter-05-generative-models-of-turbulence.html"
+    },
+    {
+      "anchor": "turbdiff-metrics",
+      "lecture_material": "Lienen et al. 2024 (arXiv 2306.01776), Section 6.3, Eqs. 5-10, Table 1, Appendix E; turbdiff/models/metrics.py",
+      "extension": "Cell TKE-field spectrum distinguished from the course E(kappa); W2,TKE is a sample-set W2 with the L2 log-spectrum distance of Eq. 7 as ground distance; W2,R uses Gaussians only for clustering and exact W2 in each region",
+      "construction": "Proposition 5.2 (what the log-spectrum distance sees); reading of Table 1",
+      "chapter": "chapter-05-generative-models-of-turbulence.html"
+    },
+    {
+      "anchor": "per-mode-snr",
+      "lecture_material": "https://az9713.github.io/mit-6s184-flow-diffusion-notes/ ch02 Section 2.2; Sambamurthy and Chattopadhyay 2025 (arXiv 2512.09572), Section 4.1 Eqs. 4 and 8",
+      "extension": "Modal exponent lambda = 11/3 for 3D K41; path invariance under scaling",
+      "construction": "Propositions 5.3-5.4: per-mode SNR for X_t = t z + (1-t) xi under the course DFT convention",
+      "chapter": "chapter-05-generative-models-of-turbulence.html"
+    },
+    {
+      "anchor": "crossover",
+      "lecture_material": "none",
+      "extension": "none",
+      "construction": "Proposition 5.5: crossover wavenumber kappa_times and generation window; worked example 5.3 (64^3 table)",
+      "chapter": "chapter-05-generative-models-of-turbulence.html"
+    },
+    {
+      "anchor": "dissipation-first",
+      "lecture_material": "Essentials ch14 (14.9)-(14.10), (14.13), Table 14.1; Sambamurthy and Chattopadhyay 2025 (arXiv 2512.09572), Section 3.1.4 quote",
+      "extension": "Link to course chapter 4 blur ordering",
+      "construction": "Proposition 5.6: exponential window bound in the dissipation range",
+      "chapter": "chapter-05-generative-models-of-turbulence.html"
+    },
+    {
+      "anchor": "optimal-denoiser",
+      "lecture_material": "MIT ch02 Proposition 2.2; MIT ch03 Sections 3.4 and 3.8",
+      "extension": "Exact sampler vs estimator distinction",
+      "construction": "Propositions 5.7 (posterior-mean attenuation) and 5.8 (second-order supervision)",
+      "chapter": "chapter-05-generative-models-of-turbulence.html"
+    },
+    {
+      "anchor": "lazy-mitigations",
+      "lecture_material": "Sambamurthy and Chattopadhyay 2025 (arXiv 2512.09572), Sections 3.1, 3.1.4, 3.2, 3.5, 4.3, 5, Figure 1; released code at commit c004897",
+      "extension": "Continuous limit abar = exp(-B); conditional forecasting target and increment form; statement that the forecast input is not established",
+      "construction": "Proposition 5.9: survival times vs gamma, terminal-law trade-off, beta_min bound; Gaussian analysis of lazy distillation on training inputs and on an input without x_0 information",
+      "chapter": "chapter-05-generative-models-of-turbulence.html"
+    },
+    {
+      "anchor": "evaluation-protocol",
+      "lecture_material": "Lienen et al. 2024 (arXiv 2306.01776), Section 6.3; Essentials ch14",
+      "extension": "Reference-to-reference baseline; gradient statistics",
+      "construction": "Eight-step evaluation protocol",
+      "chapter": "chapter-05-generative-models-of-turbulence.html"
+    },
+    {
+      "anchor": "collapse-detection",
+      "lecture_material": "Sambamurthy and Chattopadhyay 2025 (arXiv 2512.09572), Section 4.3 (direction of departures)",
+      "extension": "Two-sided departure test",
+      "construction": "Proposition 5.10 (shell scatter); departure-wavenumber definition",
+      "chapter": "chapter-05-generative-models-of-turbulence.html"
+    },
+    {
+      "anchor": "program",
+      "lecture_material": "none",
+      "extension": "none",
+      "construction": "code/ch05_spectral_snr.py: SNR tables, crossover, dissipation window, Wiener denoising, schedules",
+      "chapter": "chapter-05-generative-models-of-turbulence.html"
+    },
+    {
+      "anchor": "exercises",
+      "lecture_material": "none",
+      "extension": "none",
+      "construction": "Seven exercises with complete solutions",
+      "chapter": "chapter-05-generative-models-of-turbulence.html"
+    },
+    {
+      "anchor": "dns-cost",
+      "lecture_material": "essentials ch17 (17.14), (17.16), (17.18), (17.19); modeling ch18 32n^3",
+      "extension": "course DNS statistics from data/dns/stats.csv; JHTDB README statistics as a cited comparison",
+      "construction": "Proposition 6.1 grid identity; four-factor decomposition of the 1.895 and 3.28 ratios",
+      "chapter": "chapter-06-training-data-and-study-design.html"
+    },
+    {
+      "anchor": "effective-samples",
+      "lecture_material": "essentials ch08 (8.16)-(8.18); modeling ch18 (18.4) and code",
+      "extension": "measured correlation data/dns/rho_lags.csv, corr.csv and spectrum.csv",
+      "construction": "Propositions 6.2-6.5: exact count, closed form and continuum limit, separable product, cost per independent sample",
+      "chapter": "chapter-06-training-data-and-study-design.html"
+    },
+    {
+      "anchor": "lab-budget",
+      "lecture_material": "none",
+      "extension": "measurements of 2026-11-01 and 2026-11-02 (data sizes, JHTDB token limits, GPU timings, DNS run)",
+      "construction": "data and GPU budget, Tables 6.1-6.2",
+      "chapter": "chapter-06-training-data-and-study-design.html"
+    },
+    {
+      "anchor": "time-split",
+      "lecture_material": "modeling ch18 section 18.7 (log 20 threshold)",
+      "extension": "none",
+      "construction": "Proposition 6.6 memorization distance; measured guard band; the Lab 2 split and its --guard option",
+      "chapter": "chapter-06-training-data-and-study-design.html"
+    },
+    {
+      "anchor": "template",
+      "lecture_material": "none",
+      "extension": "course chapters 3 and 5 tests",
+      "construction": "capstone template and Table 6.3",
+      "chapter": "chapter-06-training-data-and-study-design.html"
+    },
+    {
+      "anchor": "worked-study",
+      "lecture_material": "none",
+      "extension": "none",
+      "construction": "fully worked study design on the course DNS (no results in this chapter)",
+      "chapter": "chapter-06-training-data-and-study-design.html"
+    },
+    {
+      "anchor": "rubric",
+      "lecture_material": "modeling ch22 sections 22.3-22.4, exercises 2-4",
+      "extension": "none",
+      "construction": "grading rubric, Table 6.4",
+      "chapter": "chapter-06-training-data-and-study-design.html"
+    },
+    {
+      "anchor": "program",
+      "lecture_material": "none",
+      "extension": "none",
+      "construction": "code/ch06_data_budget.py",
+      "chapter": "chapter-06-training-data-and-study-design.html"
+    },
+    {
+      "anchor": "exercises",
+      "lecture_material": "none",
+      "extension": "none",
+      "construction": "eight exercises with solutions",
+      "chapter": "chapter-06-training-data-and-study-design.html"
+    },
+    {
+      "anchor": "weeks",
+      "lecture_material": "Week table linking chapters of five source editions; depth-check verdicts from a read-only check of chapter text and code",
+      "extension": "none",
+      "construction": "Course route and outcome mapping",
+      "chapter": "book-overview.html"
+    },
+    {
+      "anchor": "pace",
+      "lecture_material": "none",
+      "extension": "none",
+      "construction": "Pacing advice for readers with mathematical physics",
+      "chapter": "book-overview.html"
+    },
+    {
+      "anchor": "assessment",
+      "lecture_material": "none",
+      "extension": "none",
+      "construction": "Assessment mapping of outcomes 1-18",
+      "chapter": "book-overview.html"
+    }
+  ]
+}

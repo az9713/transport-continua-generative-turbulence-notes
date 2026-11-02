@@ -1,0 +1,22 @@
+{
+  "sections": [
+    {
+      "anchor": "weeks",
+      "lecture_material": "Week table linking chapters of five source editions; depth-check verdicts from a read-only check of chapter text and code",
+      "extension": "none",
+      "construction": "Course route and outcome mapping"
+    },
+    {
+      "anchor": "pace",
+      "lecture_material": "none",
+      "extension": "none",
+      "construction": "Pacing advice for readers with mathematical physics"
+    },
+    {
+      "anchor": "assessment",
+      "lecture_material": "none",
+      "extension": "none",
+      "construction": "Assessment mapping of outcomes 1-18"
+    }
+  ]
+}

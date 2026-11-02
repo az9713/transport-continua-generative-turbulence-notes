@@ -1,0 +1,11 @@
+work/
+HANDOFF.md
+data/*
+!data/dns/
+data/dns/*
+!data/dns/*.csv
+!data/dns/params.json
+__pycache__/
+*.pyc
+.env
+.env.*

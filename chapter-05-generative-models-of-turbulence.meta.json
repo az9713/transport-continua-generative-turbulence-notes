@@ -1,0 +1,139 @@
+{
+  "chapter": 5,
+  "title": "5. Generative models of turbulence: sampling the steady state and losing the small scales",
+  "status": "Independently reviewed; accepted",
+  "authored_body_sha256": "ce8a55af5365831732c54a684f2006df36e8f4957b5cbb69328b3b995ccc22db",
+  "sources": [
+    {
+      "edition": "MIT 6.S184 Flow Matching and Diffusion Models study edition",
+      "file": "chapter-02.html",
+      "url": "https://az9713.github.io/mit-6s184-flow-diffusion-notes/chapter-02.html",
+      "sections_used": "2.2 probability paths, 2.4 posterior velocity, 2.6 regression (Proposition 2.2)"
+    },
+    {
+      "edition": "MIT 6.S184 Flow Matching and Diffusion Models study edition",
+      "file": "chapter-03.html",
+      "url": "https://az9713.github.io/mit-6s184-flow-diffusion-notes/chapter-03.html",
+      "sections_used": "3.2 posterior score, 3.4 noise-prediction weighting, 3.7 numerical audit, 3.8 noising clock"
+    },
+    {
+      "edition": "Essentials of Turbulence study edition",
+      "file": "chapter-14-kolmogorov-model-dissipation-spectra.html",
+      "url": "https://az9713.github.io/nptel-essentials-of-turbulence-notes/chapter-14-kolmogorov-model-dissipation-spectra.html",
+      "sections_used": "model spectrum (14.9)-(14.10); dissipation spectrum (14.13) and Table 14.1"
+    }
+  ],
+  "sections": [
+    {
+      "anchor": "marginal-target",
+      "lecture_material": "Lienen et al. 2024 (arXiv 2306.01776), Section 4.1, Eqs. 2-3",
+      "extension": "Stationary time-average variance and integral time (Proposition 5.1)",
+      "construction": "Proof of Proposition 5.1; link to effective sample counts"
+    },
+    {
+      "anchor": "ergodicity-limits",
+      "lecture_material": "Lienen et al. 2024 (arXiv 2306.01776), Sections 4.1, 6.2, 6.4, Appendix A; MIT ch03 Section 3.7",
+      "extension": "Four failure modes of the ergodic marginal; geometry generalization vs ergodicity",
+      "construction": "Worked example 5.1 (two-state process); worked example 5.2 (reference spacing)"
+    },
+    {
+      "anchor": "turbdiff-design",
+      "lecture_material": "Lienen et al. 2024 (arXiv 2306.01776), Sections 4.3-4.4, 6.1, Appendices A, D, F",
+      "extension": "Notation translation; LES-resolved range caveat; conditional generation via cell types and inpainting; homogeneity limitation; schedule read from turbdiff/models/ddpm.py",
+      "construction": "none"
+    },
+    {
+      "anchor": "turbdiff-metrics",
+      "lecture_material": "Lienen et al. 2024 (arXiv 2306.01776), Section 6.3, Eqs. 5-10, Table 1, Appendix E; turbdiff/models/metrics.py",
+      "extension": "Cell TKE-field spectrum distinguished from the course E(kappa); W2,TKE is a sample-set W2 with the L2 log-spectrum distance of Eq. 7 as ground distance; W2,R uses Gaussians only for clustering and exact W2 in each region",
+      "construction": "Proposition 5.2 (what the log-spectrum distance sees); reading of Table 1"
+    },
+    {
+      "anchor": "per-mode-snr",
+      "lecture_material": "https://az9713.github.io/mit-6s184-flow-diffusion-notes/ ch02 Section 2.2; Sambamurthy and Chattopadhyay 2025 (arXiv 2512.09572), Section 4.1 Eqs. 4 and 8",
+      "extension": "Modal exponent lambda = 11/3 for 3D K41; path invariance under scaling",
+      "construction": "Propositions 5.3-5.4: per-mode SNR for X_t = t z + (1-t) xi under the course DFT convention"
+    },
+    {
+      "anchor": "crossover",
+      "lecture_material": "none",
+      "extension": "none",
+      "construction": "Proposition 5.5: crossover wavenumber kappa_times and generation window; worked example 5.3 (64^3 table)"
+    },
+    {
+      "anchor": "dissipation-first",
+      "lecture_material": "Essentials ch14 (14.9)-(14.10), (14.13), Table 14.1; Sambamurthy and Chattopadhyay 2025 (arXiv 2512.09572), Section 3.1.4 quote",
+      "extension": "Link to course chapter 4 blur ordering",
+      "construction": "Proposition 5.6: exponential window bound in the dissipation range"
+    },
+    {
+      "anchor": "optimal-denoiser",
+      "lecture_material": "MIT ch02 Proposition 2.2; MIT ch03 Sections 3.4 and 3.8",
+      "extension": "Exact sampler vs estimator distinction",
+      "construction": "Propositions 5.7 (posterior-mean attenuation) and 5.8 (second-order supervision)"
+    },
+    {
+      "anchor": "lazy-mitigations",
+      "lecture_material": "Sambamurthy and Chattopadhyay 2025 (arXiv 2512.09572), Sections 3.1, 3.1.4, 3.2, 3.5, 4.3, 5, Figure 1; released code at commit c004897",
+      "extension": "Continuous limit abar = exp(-B); conditional forecasting target and increment form; statement that the forecast input is not established",
+      "construction": "Proposition 5.9: survival times vs gamma, terminal-law trade-off, beta_min bound; Gaussian analysis of lazy distillation on training inputs and on an input without x_0 information"
+    },
+    {
+      "anchor": "evaluation-protocol",
+      "lecture_material": "Lienen et al. 2024 (arXiv 2306.01776), Section 6.3; Essentials ch14",
+      "extension": "Reference-to-reference baseline; gradient statistics",
+      "construction": "Eight-step evaluation protocol"
+    },
+    {
+      "anchor": "collapse-detection",
+      "lecture_material": "Sambamurthy and Chattopadhyay 2025 (arXiv 2512.09572), Section 4.3 (direction of departures)",
+      "extension": "Two-sided departure test",
+      "construction": "Proposition 5.10 (shell scatter); departure-wavenumber definition"
+    },
+    {
+      "anchor": "program",
+      "lecture_material": "none",
+      "extension": "none",
+      "construction": "code/ch05_spectral_snr.py: SNR tables, crossover, dissipation window, Wiener denoising, schedules"
+    },
+    {
+      "anchor": "exercises",
+      "lecture_material": "none",
+      "extension": "none",
+      "construction": "Seven exercises with complete solutions"
+    }
+  ],
+  "references": [
+    {
+      "title": "From Zero to Turbulence: Generative Modeling for 3D Flow Simulation (Lienen, Lüdke, Hansen-Palmus, Günnemann, ICLR 2024)",
+      "url": "https://arxiv.org/abs/2306.01776",
+      "supports": "Eq. 2 and ergodic marginal target Eq. 3; TurbDiff dataset, model, training; metrics Eqs. 5-10; Table 1; 22-step decorrelation; 25 ms discard; limitations"
+    },
+    {
+      "title": "Lazy Diffusion: Mitigating spectral collapse in generative diffusion-based stable autoregressive emulation of turbulent flows (Sambamurthy, Chattopadhyay, 2025)",
+      "url": "https://arxiv.org/abs/2512.09572",
+      "supports": "Forward DDPM path; Eq. 8 SNR; power-law schedule; lazy distillation loss and Section 3.2.4 sampling step; tau*=0.5; exponent sweep; spectral errors; systems studied"
+    },
+    {
+      "title": "generative-turbulence (TurbDiff released code)",
+      "url": "https://github.com/martenlienen/generative-turbulence",
+      "supports": "turbdiff/models/metrics.py: W2,TKE and W2,R are nested W2 distances; turbdiff/models/ddpm.py: scalar SNR 1e3 to 1e-5, log-linear"
+    },
+    {
+      "title": "LazyDiffusion (released code, commit c004897, 2026-03-14)",
+      "url": "https://github.com/TACS-UCSC/LazyDiffusion",
+      "supports": "Target is the increment in both systems; the repository holds score training and a 1000-step reverse-SDE rollout, and no lazy retraining or one-step sampler; GulfOfMexico/losses.py holds an unimplemented note on cold/lazy diffusion at T = 1"
+    }
+  ],
+  "code": {
+    "file": "code/ch05_spectral_snr.py",
+    "python": "3.13",
+    "packages": [
+      "numpy"
+    ]
+  },
+  "independent_review": {
+    "status": "accepted",
+    "accepted_body_sha256": "ce8a55af5365831732c54a684f2006df36e8f4957b5cbb69328b3b995ccc22db"
+  }
+}

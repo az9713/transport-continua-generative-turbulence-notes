@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark light"><meta name="book-content-sha256" content="9ee922398c0be22963307151e6d718e9b4b3cd11d7727a88751f965921d3dc52">
+<title>Study route · Transport, Continua and Generative Turbulence</title><link rel="stylesheet" href="assets/book.css">
+<script>window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],['\\[','\\]']],processEscapes:true},svg:{fontCache:'local'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']},startup:{pageReady:()=>MathJax.startup.defaultPageReady().then(()=>{document.documentElement.dataset.mathReady='true';})}};</script>
+<script defer src="assets/mathjax-tex-svg.js"></script><script defer src="assets/book.js"></script></head>
+<body><a class="skip" href="#main">Skip to content</a><header class="site-header"><a class="brand" href="index.html">Transport, Continua and Generative Models of Turbulent Flow</a><nav class="course-nav" aria-label="Book"><a href="index.html">Chapters</a><a href="book-overview.html">Study route</a><a href="source-map.html">Source map</a><a href="references.html">References</a><a href="numerical-lab.html">Numerical lab</a></nav></header>
+<div class="layout no-toc"><main id="main"><div class="reading-tools"><button id="theme-toggle" aria-pressed="false">Light theme</button><button id="text-toggle" aria-pressed="false">Larger text</button><button id="solutions-toggle" aria-pressed="false">Expand solutions</button><button id="print-page">Print with solutions</button></div>
+<article id="chapter-content"><!-- BOOK-CONTENT-START --><h1 id="study-route">Study route: fourteen weeks</h1>
+<p class="lead">The course joins three bodies of mathematics that already exist in separate editions: continuum kinematics, flow-matching generative models, and the statistical theory of turbulence. Eleven weeks read chapters of those editions. Three weeks, and the course map, are new chapters written for this course. Two laboratories turn the mathematics into trained models that are judged by physical statistics.</p>
+<div class="learning-map"><strong>How to use this route.</strong> Read the course map and notation chapter first, because the five source editions use different symbols for the same objects. In each linked week, read the named chapter of the source edition, then return here for the next week. The linked chapters are not copied: the source edition remains the authoritative text.</div>
+<p class="source-note">Linked chapters belong to the owner's independent study editions of IIT Madras Continuum Mechanics (Gaurav Bhutani), IIT Kanpur Fluid Mechanics, MIT 6.S184 Flow Matching and Diffusion Models, IIT Bombay Essentials of Turbulence, and IIT Madras Turbulence Modeling. A read-only depth check matched each linked chapter to the learning outcome it supports; the result is recorded in the table below. The check read chapter text and code, but it is not an independent review of those chapters.</p>
+
+<h2 id="parts">1. Four parts</h2>
+<table>
+<thead><tr><th>Part</th><th>Weeks</th><th>Question</th><th>Sources</th></tr></thead>
+<tbody>
+<tr><td>A</td><td>1–3</td><td>How does a velocity field move material, and how does the motion change volume and density?</td><td>Continuum mechanics, fluid mechanics</td></tr>
+<tr><td>B</td><td>4–7</td><td>How does a learned velocity field move a probability distribution from noise to data?</td><td>New chapter 2, MIT 6.S184, Lab 1</td></tr>
+<tr><td>C</td><td>8–10</td><td>Which statistics define a turbulent velocity field, and how are they measured from a sampled field?</td><td>Essentials of Turbulence, Turbulence Modeling, new chapter 3</td></tr>
+<tr><td>D</td><td>11–14</td><td>How well can a generative model reproduce those statistics, and what does the training data cost?</td><td>New chapters 4–6, Lab 2, Turbulence Modeling</td></tr>
+</tbody></table>
+
+<h2 id="weeks">2. Week by week</h2>
+<table>
+<thead><tr><th>Week</th><th>Read</th><th>Outcomes</th><th>Depth check</th></tr></thead>
+<tbody>
+<tr><td>0</td><td><a href="chapter-01-course-map-and-notation.html">1. Course map and notation</a> (new)</td><td>all</td><td>new</td></tr>
+<tr><td>1</td><td><a href="https://az9713.github.io/nptel-continuum-mechanics-iitm-notes/chapter-07-motion-material-derivative.html">Continuum: motion and material differentiation</a>; optional <a href="https://az9713.github.io/nptel-fluid-mechanics-kanpur-notes/chapter-03-kinematics-motion-deformation-and-rotation.html">Fluid: kinematics</a></td><td>1</td><td>full in both</td></tr>
+<tr><td>2</td><td><a href="https://az9713.github.io/nptel-continuum-mechanics-iitm-notes/chapter-08-deformation-and-strain.html">Continuum: deformation and strain</a>; <a href="https://az9713.github.io/nptel-continuum-mechanics-iitm-notes/chapter-09-compatibility-and-velocity-gradients.html">Continuum: velocity gradients</a></td><td>2</td><td>full; one triple-product step is stated, not proved</td></tr>
+<tr><td>3</td><td><a href="https://az9713.github.io/nptel-continuum-mechanics-iitm-notes/chapter-10-transport-and-balance-laws.html">Continuum: transport and balance laws</a>; optional <a href="https://az9713.github.io/nptel-fluid-mechanics-kanpur-notes/chapter-04-the-reynolds-transport-theorem-and-conservation-of-mass.html">Fluid: Reynolds transport theorem</a></td><td>3</td><td>full in the continuum edition, equations (9.10), (10.4), (10.6), (10.8); partial in the fluid edition</td></tr>
+<tr><td>4</td><td><a href="https://az9713.github.io/mit-6s184-flow-diffusion-notes/chapter-01.html">MIT 6.S184: from generation to probability transport</a></td><td>4</td><td>full</td></tr>
+<tr><td>5</td><td><a href="chapter-02-density-as-mass.html">2. Density as mass</a> (new)</td><td>5</td><td>new bridge</td></tr>
+<tr><td>6</td><td><a href="https://az9713.github.io/mit-6s184-flow-diffusion-notes/chapter-02.html">MIT 6.S184: flow matching</a></td><td>6</td><td>full</td></tr>
+<tr><td>7</td><td><a href="https://az9713.github.io/mit-6s184-flow-diffusion-notes/chapter-03.html">MIT 6.S184: scores and stochastic sampling</a>; <a href="numerical-lab.html#lab1">Lab 1</a></td><td>7, 8</td><td>8 full; 7 replaced by Lab 1</td></tr>
+<tr><td>8</td><td><a href="https://az9713.github.io/nptel-essentials-of-turbulence-notes/chapter-07-random-variables-and-probability-density-functions.html">Essentials: random variables and PDFs</a>; <a href="https://az9713.github.io/nptel-essentials-of-turbulence-notes/chapter-08-random-processes-spectra-and-random-fields.html">Essentials: random processes and spectra</a></td><td>9</td><td>full</td></tr>
+<tr><td>9</td><td><a href="https://az9713.github.io/nptel-essentials-of-turbulence-notes/chapter-10-energy-cascade-and-kolmogorov-hypotheses.html">Essentials: cascade and Kolmogorov hypotheses</a>, <a href="https://az9713.github.io/nptel-essentials-of-turbulence-notes/chapter-11-energy-spectrum.html">energy spectrum</a>, <a href="https://az9713.github.io/nptel-essentials-of-turbulence-notes/chapter-14-kolmogorov-model-dissipation-spectra.html">model spectra</a>; <a href="chapter-03-energy-spectra-from-fields.html">3. Energy spectra from fields</a> (new)</td><td>10, 11</td><td>10 full; 11 new</td></tr>
+<tr><td>10</td><td><a href="https://az9713.github.io/nptel-essentials-of-turbulence-notes/chapter-19-les-conceptual-steps-filtering.html">Essentials: LES filtering</a>; <a href="https://az9713.github.io/nptel-turbulence-modeling-notes/chapter-20-filter-families-and-subgrid-viscosity.html">Modeling: filter families</a></td><td>12</td><td>full</td></tr>
+<tr><td>11</td><td><a href="chapter-04-filters-heat-and-generation.html">4. Filters, heat and generation</a> (new)</td><td>13</td><td>new</td></tr>
+<tr><td>12</td><td><a href="chapter-05-generative-models-of-turbulence.html">5. Generative models of turbulence</a> (new); <a href="numerical-lab.html#lab2">Lab 2</a></td><td>14, 15</td><td>new</td></tr>
+<tr><td>13</td><td><a href="https://az9713.github.io/nptel-essentials-of-turbulence-notes/chapter-17-dns-pseudo-spectral-methods-cost.html">Essentials: DNS cost</a>; <a href="chapter-06-training-data-and-study-design.html">6. Training data and study design</a> (new)</td><td>16</td><td>DNS cost full; training-data framing new</td></tr>
+<tr><td>14</td><td><a href="https://az9713.github.io/nptel-turbulence-modeling-notes/chapter-22-dynamic-fitting-and-scale-similarity.html">Modeling: dynamic fitting</a>; capstone in chapter 6</td><td>17, 18</td><td>17 full; 18 new</td></tr>
+</tbody></table>
+
+<h2 id="pace">3. Pace for a reader with mathematical physics</h2>
+<p>Part A is mostly revision for a reader who already knows vector calculus and PDEs. Weeks 1–3 can be read in about two weeks if the reader concentrates on the deformation gradient and on the determinant rate $\dot J=J\,\mathrm{div}\,\mathbf v$, because chapter 2 builds its probability argument on exactly those results. The time saved is best spent on the two laboratories, which take the longest to run and to interpret.</p>
+
+<h2 id="assessment">4. Assessment</h2>
+<p>Each outcome is assessed in the week the table names. Derivation outcomes (2, 3, 5, 6, 8, 10, 13, 17) are assessed by the derivation exercises of the corresponding chapter. Computational outcomes (7, 11, 14, 15) are assessed by the laboratories and by the programs of chapters 3 and 5. The integrative outcome 18 is assessed by the capstone study in chapter 6, which has its own rubric.</p>
+
+<h2 id="limits">5. What this route does not claim</h2>
+<p>The route does not make the linked chapters part of this edition, and it does not certify them. The depth check found two gaps that the new chapters fill (the probability form of the continuity equation, and the link between a Gaussian filter and the heat equation) and one gap that a laboratory fills (a two-dimensional neural flow-matching model). The course does not teach how to write a flow solver or how to engineer large-scale GPU training.</p>
+<!-- BOOK-CONTENT-END --></article></main></div><footer class="site-footer">Independent synthesis course built from the author's NPTEL and MIT study editions and primary research papers. Source and review limitations are recorded separately.</footer></body></html>

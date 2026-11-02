@@ -1,0 +1,150 @@
+{
+  "scope": "Headless Chrome DOM, rendering and controls; no human visual or scientific certification",
+  "source": "local files",
+  "widths": [
+    1440,
+    390
+  ],
+  "passed": true,
+  "controls": {
+    "theme_before": false,
+    "theme_after": true,
+    "solutions_open": true,
+    "toc_links": 8
+  },
+  "issues": [],
+  "pages": [
+    {
+      "page": "index.html",
+      "width": 1440,
+      "rendered_math": 0,
+      "math_errors": 0,
+      "leftover_dollars": 0,
+      "overflow_px": 0,
+      "dead_anchors": [],
+      "missing_local": [],
+      "errors": [],
+      "body_sha256": "86914244bd2fd7c89965425304357e34cd0317136596d016277b580fdbe987ff"
+    },
+    {
+      "page": "book-overview.html",
+      "width": 1440,
+      "rendered_math": 1,
+      "math_errors": 0,
+      "leftover_dollars": 0,
+      "overflow_px": 0,
+      "dead_anchors": [],
+      "missing_local": [],
+      "errors": [],
+      "body_sha256": "9ee922398c0be22963307151e6d718e9b4b3cd11d7727a88751f965921d3dc52"
+    },
+    {
+      "page": "source-map.html",
+      "width": 1440,
+      "rendered_math": 0,
+      "math_errors": 0,
+      "leftover_dollars": 0,
+      "overflow_px": 0,
+      "dead_anchors": [],
+      "missing_local": [],
+      "errors": [],
+      "body_sha256": "f1643037567ac47fbe94e1e1d83fc1ea229859866eececca67fe669a30e4b723"
+    },
+    {
+      "page": "references.html",
+      "width": 1440,
+      "rendered_math": 0,
+      "math_errors": 0,
+      "leftover_dollars": 0,
+      "overflow_px": 0,
+      "dead_anchors": [],
+      "missing_local": [],
+      "errors": [],
+      "body_sha256": "dda3b0efd6d49f88f804e5634f338ee62bb3231207f68985acc39088a75f6c7e"
+    },
+    {
+      "page": "numerical-lab.html",
+      "width": 1440,
+      "rendered_math": 82,
+      "math_errors": 0,
+      "leftover_dollars": 0,
+      "overflow_px": 0,
+      "dead_anchors": [],
+      "missing_local": [],
+      "errors": [],
+      "body_sha256": "cf895bcf97bf87c5872fe463d086ad8097db88265c8a638a99b8e25f000646b3"
+    },
+    {
+      "page": "chapter-01-course-map-and-notation.html",
+      "width": 1440,
+      "rendered_math": 735,
+      "math_errors": 0,
+      "leftover_dollars": 0,
+      "overflow_px": 0,
+      "dead_anchors": [],
+      "missing_local": [],
+      "errors": [],
+      "body_sha256": "c634ca32f4a5197ab7db86d9d0b50a1746f9426689fc5505395ed89d4251e8df"
+    },
+    {
+      "page": "chapter-02-density-as-mass.html",
+      "width": 1440,
+      "rendered_math": 806,
+      "math_errors": 0,
+      "leftover_dollars": 0,
+      "overflow_px": 0,
+      "dead_anchors": [],
+      "missing_local": [],
+      "errors": [],
+      "body_sha256": "bcfab30a397e2e4bc04c629633e48fbf8c29a788159fbad67dea69447ab1b1bf"
+    },
+    {
+      "page": "chapter-03-energy-spectra-from-fields.html",
+      "width": 1440,
+      "rendered_math": 1022,
+      "math_errors": 0,
+      "leftover_dollars": 0,
+      "overflow_px": 0,
+      "dead_anchors": [],
+      "missing_local": [],
+      "errors": [],
+      "body_sha256": "39f5a803fe54f90b257502afc8270059dda87a7eb220c74803334147e2b3af5b"
+    },
+    {
+      "page": "chapter-04-filters-heat-and-generation.html",
+      "width": 1440,
+      "rendered_math": 799,
+      "math_errors": 0,
+      "leftover_dollars": 0,
+      "overflow_px": 0,
+      "dead_anchors": [],
+      "missing_local": [],
+      "errors": [],
+      "body_sha256": "8b4c77c54c7608d4d626aca3d5e4e342a4c29b1efcd4b6b044e0b2b073511edf"
+    },
+    {
+      "page": "chapter-05-generative-models-of-turbulence.html",
+      "width": 1440,
+      "rendered_math": 805,
+      "math_errors": 0,
+      "leftover_dollars": 0,
+      "overflow_px": 0,
+      "dead_anchors": [],
+      "missing_local": [],
+      "errors": [],
+      "body_sha256": "ce8a55af5365831732c54a684f2006df36e8f4957b5cbb69328b3b995ccc22db"
+    },
+    {
+      "page": "chapter-06-training-data-and-study-design.html",
+      "width": 1440,
+      "rendered_math": 476,
+      "math_errors": 0,
+      "leftover_dollars": 0,
+      "overflow_px": 0,
+      "dead_anchors": [],
+      "missing_local": [],
+      "errors": [],
+      "body_sha256": "eb12790cb1c286cba76d8665fbfe13f68a1174ea5be5074ff5f1cd1f19968690"
+    }
+  ]
+}

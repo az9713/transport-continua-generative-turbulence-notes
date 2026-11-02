@@ -1,0 +1,199 @@
+{
+  "chapter": 1,
+  "title": "1. Course map and notation",
+  "status": "Independently reviewed; accepted",
+  "authored_body_sha256": "c634ca32f4a5197ab7db86d9d0b50a1746f9426689fc5505395ed89d4251e8df",
+  "independent_review": {
+    "status": "accepted",
+    "accepted_body_sha256": "c634ca32f4a5197ab7db86d9d0b50a1746f9426689fc5505395ed89d4251e8df"
+  },
+  "sources": [
+    {
+      "edition": "IITM continuum mechanics",
+      "file": "chapter-07-motion-material-derivative.html",
+      "url": "https://az9713.github.io/nptel-continuum-mechanics-iitm-notes/chapter-07-motion-material-derivative.html",
+      "sections_used": "route week 1; X label, V material velocity, Omega region"
+    },
+    {
+      "edition": "IITM continuum mechanics",
+      "file": "chapter-08-deformation-and-strain.html",
+      "url": "https://az9713.github.io/nptel-continuum-mechanics-iitm-notes/chapter-08-deformation-and-strain.html",
+      "sections_used": "route week 2; infinitesimal strain epsilon"
+    },
+    {
+      "edition": "IITM continuum mechanics",
+      "file": "chapter-09-compatibility-and-velocity-gradients.html",
+      "url": "https://az9713.github.io/nptel-continuum-mechanics-iitm-notes/chapter-09-compatibility-and-velocity-gradients.html",
+      "sections_used": "route week 2; L, D, W"
+    },
+    {
+      "edition": "IITM continuum mechanics",
+      "file": "chapter-10-transport-and-balance-laws.html",
+      "url": "https://az9713.github.io/nptel-continuum-mechanics-iitm-notes/chapter-10-transport-and-balance-laws.html",
+      "sections_used": "route week 3; F, J, dV, Omega_t"
+    },
+    {
+      "edition": "Kanpur fluid mechanics",
+      "file": "chapter-03-kinematics-motion-deformation-and-rotation.html",
+      "url": "https://az9713.github.io/nptel-fluid-mechanics-kanpur-notes/chapter-03-kinematics-motion-deformation-and-rotation.html",
+      "sections_used": "route week 1; X path, V Eulerian, (3.22) Omega_z, (3.27)-(3.28) strain rate"
+    },
+    {
+      "edition": "Kanpur fluid mechanics",
+      "file": "chapter-04-the-reynolds-transport-theorem-and-conservation-of-mass.html",
+      "url": "https://az9713.github.io/nptel-fluid-mechanics-kanpur-notes/chapter-04-the-reynolds-transport-theorem-and-conservation-of-mass.html",
+      "sections_used": "route week 3; volume element, Omega(t) region, (4.15) generic F"
+    },
+    {
+      "edition": "MIT 6.S184",
+      "file": "chapter-01.html",
+      "url": "https://az9713.github.io/mit-6s184-flow-diffusion-notes/chapter-01.html",
+      "sections_used": "route week 4; generation time t"
+    },
+    {
+      "edition": "MIT 6.S184",
+      "file": "chapter-02.html",
+      "url": "https://az9713.github.io/mit-6s184-flow-diffusion-notes/chapter-02.html",
+      "sections_used": "route week 6; 2.2 schedules, 2.3 label V_t, 2.5 D_t, noise epsilon"
+    },
+    {
+      "edition": "MIT 6.S184",
+      "file": "chapter-03.html",
+      "url": "https://az9713.github.io/mit-6s184-flow-diffusion-notes/chapter-03.html",
+      "sections_used": "route week 7; 3.2 q_t and posterior mean D_t, 3.5 variance V_t, 3.8 clock tau and rho_tau"
+    },
+    {
+      "edition": "Essentials of turbulence",
+      "file": "chapter-07-random-variables-and-probability-density-functions.html",
+      "url": "https://az9713.github.io/nptel-essentials-of-turbulence-notes/chapter-07-random-variables-and-probability-density-functions.html",
+      "sections_used": "route week 8"
+    },
+    {
+      "edition": "Essentials of turbulence",
+      "file": "chapter-08-random-processes-spectra-and-random-fields.html",
+      "url": "https://az9713.github.io/nptel-essentials-of-turbulence-notes/chapter-08-random-processes-spectra-and-random-fields.html",
+      "sections_used": "route week 8; (8.29)-(8.33) spectrum tensor and E"
+    },
+    {
+      "edition": "Essentials of turbulence",
+      "file": "chapter-10-energy-cascade-and-kolmogorov-hypotheses.html",
+      "url": "https://az9713.github.io/nptel-essentials-of-turbulence-notes/chapter-10-energy-cascade-and-kolmogorov-hypotheses.html",
+      "sections_used": "route week 9"
+    },
+    {
+      "edition": "Essentials of turbulence",
+      "file": "chapter-11-energy-spectrum.html",
+      "url": "https://az9713.github.io/nptel-essentials-of-turbulence-notes/chapter-11-energy-spectrum.html",
+      "sections_used": "route week 9; (11.2) band energy"
+    },
+    {
+      "edition": "Essentials of turbulence",
+      "file": "chapter-14-kolmogorov-model-dissipation-spectra.html",
+      "url": "https://az9713.github.io/nptel-essentials-of-turbulence-notes/chapter-14-kolmogorov-model-dissipation-spectra.html",
+      "sections_used": "route week 9"
+    },
+    {
+      "edition": "Essentials of turbulence",
+      "file": "chapter-17-dns-pseudo-spectral-methods-cost.html",
+      "url": "https://az9713.github.io/nptel-essentials-of-turbulence-notes/chapter-17-dns-pseudo-spectral-methods-cost.html",
+      "sections_used": "route week 13; fftn normalization in its program"
+    },
+    {
+      "edition": "Essentials of turbulence",
+      "file": "chapter-19-les-conceptual-steps-filtering.html",
+      "url": "https://az9713.github.io/nptel-essentials-of-turbulence-notes/chapter-19-les-conceptual-steps-filtering.html",
+      "sections_used": "route week 10; (19.7)-(19.9), Table 19.1"
+    },
+    {
+      "edition": "Turbulence modeling",
+      "file": "chapter-20-filter-families-and-subgrid-viscosity.html",
+      "url": "https://az9713.github.io/nptel-turbulence-modeling-notes/chapter-20-filter-families-and-subgrid-viscosity.html",
+      "sections_used": "route week 10; 20.1 transform convention, 20.4 Gaussian kernel"
+    },
+    {
+      "edition": "Turbulence modeling",
+      "file": "chapter-22-dynamic-fitting-and-scale-similarity.html",
+      "url": "https://az9713.github.io/nptel-turbulence-modeling-notes/chapter-22-dynamic-fitting-and-scale-similarity.html",
+      "sections_used": "route week 14; outcome 17"
+    }
+  ],
+  "sections": [
+    {
+      "anchor": "course-map",
+      "lecture_material": "Route of course spec section 4; chapter titles and anchors of the linked source chapters",
+      "extension": "none",
+      "construction": "Partition of the 14 weeks into four parts; week-by-week dependency argument"
+    },
+    {
+      "anchor": "prerequisites",
+      "lecture_material": "Audience statement of the course spec",
+      "extension": "none",
+      "construction": "Seven-question self-test with solutions"
+    },
+    {
+      "anchor": "notation",
+      "lecture_material": "Course notation table of the spec, checked against IITM ch. 7-10, Kanpur ch. 3-4, MIT ch. 1-3, essentials ch. 8, 11, 19, modeling ch. 20",
+      "extension": "none",
+      "construction": "Explanation of the four clocks, two velocities, two densities and kappa versus k"
+    },
+    {
+      "anchor": "conflicts",
+      "lecture_material": "IITM ch. 7-10; Kanpur ch. 3-4; MIT ch. 2-3; essentials and modeling dissipation symbols",
+      "extension": "none",
+      "construction": "Conflict table, including MIT ch. 3 rho_tau and Kanpur Omega found during this chapter, rows 14-19 (MIT xi, lag s, tau, U/u/v, L and script L, Laplacian Delta) added in round 1 review, row 18 corrected and row 20 (kappa_c) added in round 2 review; X/V translation"
+    },
+    {
+      "anchor": "fourier",
+      "lecture_material": "essentials (8.29)-(8.33), (19.7)-(19.9), Table 19.1; modeling 20.1-20.4; essentials ch. 17 aliasing-test program normalization",
+      "extension": "none",
+      "construction": "Propositions 1.1-1.3 with proofs; Gaussian worked conversion; discrete convention"
+    },
+    {
+      "anchor": "fourier-code",
+      "lecture_material": "none",
+      "extension": "none",
+      "construction": "Program code/ch01_fourier_conventions.py and its interpretation"
+    },
+    {
+      "anchor": "outcomes",
+      "lecture_material": "Outcome list of course spec section 3",
+      "extension": "none",
+      "construction": "Assignment of each outcome to an assessing week"
+    },
+    {
+      "anchor": "exercises",
+      "lecture_material": "Symbols and equations of the linked chapters",
+      "extension": "none",
+      "construction": "Seven exercises with complete solutions"
+    }
+  ],
+  "references": [
+    {
+      "title": "Rissanen, Heinonen and Solin, Generative Modelling With Inverse Heat Dissipation, ICLR 2023 (arXiv 2206.13397)",
+      "url": "https://arxiv.org/abs/2206.13397",
+      "supports": "Notation row: the paper writes the heat-equation time as t with unit diffusivity, PDE (1); not re-read for chapter 1"
+    },
+    {
+      "title": "Sambamurthy and Chattopadhyay, Lazy Diffusion, arXiv 2512.09572 (December 2025)",
+      "url": "https://arxiv.org/abs/2512.09572",
+      "supports": "Notation rows for tau and Section 1.3: forward clock and k for wavenumber; not re-read for chapter 1"
+    },
+    {
+      "title": "Lienen, Lüdke, Hansen-Palmus and Günnemann, From Zero to Turbulence: Generative Modeling for 3D Flow Simulation, ICLR 2024 (arXiv 2306.01776)",
+      "url": "https://arxiv.org/abs/2306.01776",
+      "supports": "Section 1.3: the paper writes k for wavenumber; not re-read for chapter 1"
+    },
+    {
+      "title": "Solution to Exercise D.1, S. B. Pope, Turbulent Flows (Cambridge University Press, 2000), prepared by K. S. Kusumanchi, on the book's website",
+      "url": "https://pope.mae.cornell.edu/TurbulentFlows/solutions/solutions/appendixD/D.1.pdf",
+      "supports": "Source note: the solution cites the book's Eqs. (D.1)-(D.2) with 1/(2 pi) on the forward transform and no prefactor on the inverse. Secondary and one-dimensional; the book's pages and its three-dimensional spectrum tensor were not read. No result of the chapter depends on it."
+    }
+  ],
+  "code": {
+    "file": "code/ch01_fourier_conventions.py",
+    "python": "3.13",
+    "packages": [
+      "numpy"
+    ]
+  }
+}

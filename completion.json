@@ -1,0 +1,16 @@
+{
+  "passed": true,
+  "complete": true,
+  "stage": "All six chapters accepted; local checks passed; publication recorded by the served site",
+  "chapter_count": 6,
+  "scientific_review_complete": true,
+  "local_release_checks": true,
+  "publication": true,
+  "limitations": [
+    "Independent AI reviews do not constitute human expert certification",
+    "The DNS is one run at Re_lambda=115; its spectrum has no inertial band, so it cannot test a -5/3 law",
+    "Lab 2 outputs are single stochastic runs on one GPU; the study claim of chapter 6 is not supported by the one run and its memorization test was not computed",
+    "The spectral-collapse detector of chapter 5 assumes Gaussian scatter; on the DNS its control also departs in 9 of 10 pairs",
+    "Not reverified in review: the GPU probe table, the 1790 and 2106 MiB memory test, the JHTDB cutout time and token limits, The Well size"
+  ]
+}

@@ -1,0 +1,136 @@
+{
+  "chapter": 6,
+  "title": "6. Training data and study design",
+  "status": "Independently reviewed; accepted",
+  "authored_body_sha256": "eb12790cb1c286cba76d8665fbfe13f68a1174ea5be5074ff5f1cd1f19968690",
+  "sources": [
+    {
+      "edition": "Essentials of Turbulence (NPTEL)",
+      "file": "chapter-17-dns-pseudo-spectral-methods-cost.html",
+      "url": "https://az9713.github.io/nptel-essentials-of-turbulence-notes/chapter-17-dns-pseudo-spectral-methods-cost.html",
+      "sections_used": "modes, truncation-count, time-steps, operations, production: (17.13)-(17.19), comparison with published grids"
+    },
+    {
+      "edition": "Essentials of Turbulence (NPTEL)",
+      "file": "chapter-08-random-processes-spectra-and-random-fields.html",
+      "url": "https://az9713.github.io/nptel-essentials-of-turbulence-notes/chapter-08-random-processes-spectra-and-random-fields.html",
+      "sections_used": "autocorrelation (8.6)-(8.7), time-averages (8.16)-(8.18), two-point, gaussian-process"
+    },
+    {
+      "edition": "Turbulence Modeling (NPTEL)",
+      "file": "chapter-22-dynamic-fitting-and-scale-similarity.html",
+      "url": "https://az9713.github.io/nptel-turbulence-modeling-notes/chapter-22-dynamic-fitting-and-scale-similarity.html",
+      "sections_used": "least-squares, averaging, exercises 2-4 (outcome 17, week 14)"
+    },
+    {
+      "edition": "Turbulence Modeling (NPTEL)",
+      "file": "code/ch18_scales_and_dns.py",
+      "url": "https://az9713.github.io/nptel-turbulence-modeling-notes/code/ch18_scales_and_dns.py",
+      "sections_used": "effective-count line (n=1000, rho=0.99), four-field bytes 32n^3, periodized exponential correlation; chapter 18 sections 18.4 and 18.7"
+    },
+    {
+      "edition": "MIT 6.S184 study edition",
+      "file": "chapter-02.html",
+      "url": "https://az9713.github.io/mit-6s184-flow-diffusion-notes/chapter-02.html#loss-floor",
+      "sections_used": "conditional loss floor (cited only)"
+    }
+  ],
+  "sections": [
+    {
+      "anchor": "dns-cost",
+      "lecture_material": "essentials ch17 (17.14), (17.16), (17.18), (17.19); modeling ch18 32n^3",
+      "extension": "course DNS statistics from data/dns/stats.csv; JHTDB README statistics as a cited comparison",
+      "construction": "Proposition 6.1 grid identity; four-factor decomposition of the 1.895 and 3.28 ratios"
+    },
+    {
+      "anchor": "effective-samples",
+      "lecture_material": "essentials ch08 (8.16)-(8.18); modeling ch18 (18.4) and code",
+      "extension": "measured correlation data/dns/rho_lags.csv, corr.csv and spectrum.csv",
+      "construction": "Propositions 6.2-6.5: exact count, closed form and continuum limit, separable product, cost per independent sample"
+    },
+    {
+      "anchor": "lab-budget",
+      "lecture_material": "none",
+      "extension": "measurements of 2026-11-01 and 2026-11-02 (data sizes, JHTDB token limits, GPU timings, DNS run)",
+      "construction": "data and GPU budget, Tables 6.1-6.2"
+    },
+    {
+      "anchor": "time-split",
+      "lecture_material": "modeling ch18 section 18.7 (log 20 threshold)",
+      "extension": "none",
+      "construction": "Proposition 6.6 memorization distance; measured guard band; the Lab 2 split and its --guard option"
+    },
+    {
+      "anchor": "template",
+      "lecture_material": "none",
+      "extension": "course chapters 3 and 5 tests",
+      "construction": "capstone template and Table 6.3"
+    },
+    {
+      "anchor": "worked-study",
+      "lecture_material": "none",
+      "extension": "none",
+      "construction": "fully worked study design on the course DNS (no results in this chapter)"
+    },
+    {
+      "anchor": "rubric",
+      "lecture_material": "modeling ch22 sections 22.3-22.4, exercises 2-4",
+      "extension": "none",
+      "construction": "grading rubric, Table 6.4"
+    },
+    {
+      "anchor": "program",
+      "lecture_material": "none",
+      "extension": "none",
+      "construction": "code/ch06_data_budget.py"
+    },
+    {
+      "anchor": "exercises",
+      "lecture_material": "none",
+      "extension": "none",
+      "construction": "eight exercises with solutions"
+    }
+  ],
+  "references": [
+    {
+      "title": "JHTDB forced isotropic turbulence data set (extended), README",
+      "url": "https://turbulence.pha.jhu.edu/docs/README-isotropic.pdf",
+      "supports": "nu, DNS and storage time steps, 5028 frames over 0-10.056, about five large-eddy turnover times, k=0.705, eps=0.103, u'=0.686, Re_lambda=418, eta=0.00280, L=1.364, T_L=1.99, 2sqrt2/3 truncation, finite-difference divergence note"
+    },
+    {
+      "title": "JHTDB forced isotropic turbulence web page",
+      "url": "https://turbulence.pha.jhu.edu/Forced_isotropic_turbulence.aspx",
+      "supports": "Re_lambda about 433, 5028 frames, storage every 10 DNS steps"
+    },
+    {
+      "title": "Lienen et al., From Zero to Turbulence: Generative Modeling for 3D Flow Simulation (ICLR 2024)",
+      "url": "https://arxiv.org/abs/2306.01776",
+      "supports": "2.2 TB dataset, grid, run count, ergodicity argument (via course chapter 5)"
+    },
+    {
+      "title": "Ohana et al., The Well: a Large-Scale Collection of Diverse Physics Simulations for Machine Learning",
+      "url": "https://arxiv.org/abs/2412.00568",
+      "supports": "existence of The Well collection; MHD_64 size and physics were measured for this course"
+    }
+  ],
+  "code": {
+    "file": "code/ch06_data_budget.py",
+    "python": "3.13",
+    "packages": [
+      "numpy"
+    ]
+  },
+  "independent_review": {
+    "status": "accepted",
+    "accepted_body_sha256": "eb12790cb1c286cba76d8665fbfe13f68a1174ea5be5074ff5f1cd1f19968690",
+    "rounds": 3
+  },
+  "data": [
+    "data/dns/params.json",
+    "data/dns/stats.csv",
+    "data/dns/spectrum.csv",
+    "data/dns/corr.csv",
+    "data/dns/rho_lags.csv",
+    "data/dns/filtered/*.npy (local, not distributed: flatness, gradient skewness, nearest-neighbor distances, filtered dissipation, and the mean shell spectrum behind the simulated Gaussian flatness of Section 6.6; no chapter program reads them)"
+  ]
+}

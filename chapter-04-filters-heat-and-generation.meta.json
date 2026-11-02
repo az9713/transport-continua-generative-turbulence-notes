@@ -1,0 +1,123 @@
+{
+  "chapter": 4,
+  "title": "4. Filters, heat and generation",
+  "status": "Independently reviewed; accepted",
+  "authored_body_sha256": "8b4c77c54c7608d4d626aca3d5e4e342a4c29b1efcd4b6b044e0b2b073511edf",
+  "sources": [
+    {
+      "edition": "Essentials of Turbulence study edition",
+      "file": "chapter-19-les-conceptual-steps-filtering.html",
+      "url": "https://az9713.github.io/nptel-essentials-of-turbulence-notes/chapter-19-les-conceptual-steps-filtering.html#one-d-filters",
+      "sections_used": "Filtering is a convolution (19.2)-(19.3); Five one-dimensional filters, Table 19.1; transfer function and (19.9); Table 19.2; (19.20); How many Fourier modes (Pope 2004 h/Delta); Exercises 1, 3, 4"
+    },
+    {
+      "edition": "Turbulence Modeling study edition",
+      "file": "chapter-20-filter-families-and-subgrid-viscosity.html",
+      "url": "https://az9713.github.io/nptel-turbulence-modeling-notes/chapter-20-filter-families-and-subgrid-viscosity.html#kernel",
+      "sections_used": "20.1-20.4: Fourier convention, box, sharp projection, Gaussian composition"
+    },
+    {
+      "edition": "MIT 6.S184 study edition",
+      "file": "chapter-03.html",
+      "url": "https://az9713.github.io/mit-6s184-flow-diffusion-notes/chapter-03.html#posterior-score",
+      "sections_used": "3.2 posterior mean, 3.3 regression projection, 3.4 Gaussian noise path"
+    }
+  ],
+  "sections": [
+    {
+      "anchor": "families",
+      "lecture_material": "essentials ch19 Table 19.1, (19.2)-(19.3), (19.9); modeling 20.1",
+      "extension": "none",
+      "construction": "Definition 4.1 of semigroup and heat semigroup families; Fourier-convention mapping"
+    },
+    {
+      "anchor": "heat-kernel",
+      "lecture_material": "none",
+      "extension": "Rissanen et al. 2023 PDE (1), solution (2), sigma_B^2 = 2t; infinite-plane qualifier read in the ar5iv HTML",
+      "construction": "Proposition 4.1 with proof; Neumann-periodic even-extension mapping"
+    },
+    {
+      "anchor": "width-time",
+      "lecture_material": "essentials ch19 Table 19.1, Exercise 3(a), Exercise 4 (12.95 mm Gaussian width)",
+      "extension": "none",
+      "construction": "Corollary 4.2 Delta^2 = 24 nu s; Worked example 4.1 heat time of the jet filter"
+    },
+    {
+      "anchor": "composition",
+      "lecture_material": "essentials ch19 Exercise 3(a); modeling 20.4 combined width",
+      "extension": "none",
+      "construction": "Proposition 4.3 with proof; numerical check"
+    },
+    {
+      "anchor": "which-families",
+      "lecture_material": "essentials ch19 Table 19.1, (19.20); modeling 20.2-20.4 double box and projection",
+      "extension": "none",
+      "construction": "Proposition 4.4 classification with proofs; fractional generators of Cauchy and Pao"
+    },
+    {
+      "anchor": "backward",
+      "lecture_material": "none",
+      "extension": "none",
+      "construction": "Proposition 4.5 ill-posedness; N-independent Nyquist amplification; numerical inversion"
+    },
+    {
+      "anchor": "noise",
+      "lecture_material": "MIT ch03 3.2-3.3 posterior mean and regression projection",
+      "extension": "Rissanen et al. 2023 equations (3)-(4), sigma, delta/sigma, K; noise-free targets of Algorithm 1 read in the ar5iv HTML",
+      "construction": "Proposition 4.6 per-mode gain bound under a Gaussian prior"
+    },
+    {
+      "anchor": "orderings",
+      "lecture_material": "MIT ch03 3.4 Gaussian noise path",
+      "extension": "Rissanen et al. 2023 PSD 1/f^alpha and spectral statements; coarse-to-fine statement read in the ar5iv HTML",
+      "construction": "Per-mode SNR for noise and blur orderings, crossover laws, band ratios"
+    },
+    {
+      "anchor": "deconvolution",
+      "lecture_material": "essentials ch19 Pope (2004) h/Delta report",
+      "extension": "Stolz and Adams 1999 abstract (bibliographic data checked on Crossref; body not read)",
+      "construction": "Proposition 4.7 van Cittert truncation analysis; posterior-mean energy deficit"
+    },
+    {
+      "anchor": "implementation",
+      "lecture_material": "none",
+      "extension": "none",
+      "construction": "code/ch04_heat_filter.py and its recorded output"
+    },
+    {
+      "anchor": "exercises",
+      "lecture_material": "none",
+      "extension": "none",
+      "construction": "Exercises 4.1-4.8 with solutions"
+    },
+    {
+      "anchor": "references",
+      "lecture_material": "none",
+      "extension": "none",
+      "construction": "Source list and evidence boundaries"
+    }
+  ],
+  "references": [
+    {
+      "title": "Generative Modelling With Inverse Heat Dissipation (Rissanen, Heinonen, Solin, ICLR 2023)",
+      "url": "https://arxiv.org/abs/2206.13397",
+      "supports": "Heat-equation forward process, noise sigma, reverse model, delta/sigma, K, sigma_B^2 = 2t, spectral statements; noise-free targets of Algorithm 1, the infinite-plane qualifier and the coarse-to-fine statement (read in the ar5iv HTML rendering)"
+    },
+    {
+      "title": "An approximate deconvolution procedure for large-eddy simulation (Stolz and Adams, Phys. Fluids 11(7), 1699-1701, 1999)",
+      "url": "https://doi.org/10.1063/1.869867",
+      "supports": "Approximate deconvolution by truncated series expansion of the inverse filter operator (abstract only; operator details not verified)"
+    }
+  ],
+  "code": {
+    "file": "code/ch04_heat_filter.py",
+    "python": "3.13",
+    "packages": [
+      "numpy"
+    ]
+  },
+  "independent_review": {
+    "status": "accepted",
+    "accepted_body_sha256": "8b4c77c54c7608d4d626aca3d5e4e342a4c29b1efcd4b6b044e0b2b073511edf"
+  }
+}

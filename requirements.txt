@@ -1,0 +1,10 @@
+# Chapter programs: Python 3.13 + NumPy
+numpy>=2.2
+# Laboratories
+torch>=2.11
+# JHTDB download (separate environment recommended)
+# givernylocal>=3.6.4
+# Validation
+beautifulsoup4
+playwright
+pycodestyle
