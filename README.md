@@ -13,6 +13,7 @@ laboratories connect chapters of five existing study editions.
 - [Start with the course map and notation](https://az9713.github.io/transport-continua-generative-turbulence-notes/chapter-01-course-map-and-notation.html)
 - [Read the laboratories and their measured output](https://az9713.github.io/transport-continua-generative-turbulence-notes/numerical-lab.html)
 - [Inspect source coverage](https://az9713.github.io/transport-continua-generative-turbulence-notes/source-map.html)
+- [Read how the dataset was made, including the discarded runs](https://az9713.github.io/transport-continua-generative-turbulence-notes/development-journey.html)
 - [Read the workflow and evidence limits](WORKFLOW.md)
 
 ## What is new here

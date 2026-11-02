@@ -21,7 +21,8 @@ args = ap.parse_args()
 manifest = json.loads((ROOT / 'source-manifest.json').read_text('utf-8'))
 chapters = [c['file'] for c in manifest['chapters']]
 pages = ['index.html', 'book-overview.html', 'source-map.html',
-         'references.html', 'numerical-lab.html'] + chapters
+         'references.html', 'numerical-lab.html',
+         'development-journey.html'] + chapters
 SCAN = '''() => {
   const root = document.documentElement;
   const ids = new Set([...document.querySelectorAll('[id]')].map(e => e.id));

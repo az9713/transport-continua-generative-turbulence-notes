@@ -24,7 +24,7 @@
       "dead_anchors": [],
       "missing_local": [],
       "errors": [],
-      "body_sha256": "8d041973b1914857cad971ea660d57064bc59a0a24fbf8e74cd008d599a1c920"
+      "body_sha256": "be8b8bf3f8313af361b15447d24140e40822c28fb6e21b9e889dac845362b344"
     },
     {
       "page": "book-overview.html",
@@ -73,6 +73,18 @@
       "missing_local": [],
       "errors": [],
       "body_sha256": "cf895bcf97bf87c5872fe463d086ad8097db88265c8a638a99b8e25f000646b3"
+    },
+    {
+      "page": "development-journey.html",
+      "width": 1440,
+      "rendered_math": 0,
+      "math_errors": 0,
+      "leftover_dollars": 0,
+      "overflow_px": 0,
+      "dead_anchors": [],
+      "missing_local": [],
+      "errors": [],
+      "body_sha256": "b893c5974bed8d13ac023e239014986eee08700f5d3abb6200434ebefa3e3106"
     },
     {
       "page": "chapter-01-course-map-and-notation.html",

@@ -149,9 +149,12 @@ def build():
             f'All {len(chapters)} new chapters are drafted. {len(accepted)} currently have two independent scientific acceptances. Final package and publication checks remain in progress.')
     index = '<h1>Transport, Continua and Generative Models of Turbulent Flow</h1><p class="lead">A synthesis course: continuum kinematics, flow matching and turbulence statistics, joined by new bridge chapters and laboratories.</p><p class="warning">'+esc(notice)+'</p>'
     index += '<h2 id="weeks">The fourteen weeks</h2><p>The course has fourteen weeks and six new chapters. Eleven weeks read chapters of five existing study editions. The table links every reading in order. The linked chapters stay on their own sites and do not link back: return to this page for the next week. <a href="book-overview.html">The study route</a> adds the parts, the pace and the assessment.</p>' + weeks
+    index += '<p>The course generates its own turbulence data. <a href="development-journey.html">The development journey</a> records how that dataset was made, including the two discarded runs.</p>'
     index += '<h2 id="new-chapters">The new chapters</h2><label class="search-label" for="lecture-search">Search the new chapters</label><input id="lecture-search" type="search"><p id="search-status" role="status" aria-live="polite"></p><ol class="lecture-list">' + ''.join(rows) + '</ol>'
     write(ROOT / 'index.html', page('Course index', index))
     write(overview_path, page('Study route', overview))
+    journey = ROOT / 'development-journey.html'
+    write(journey, page('Development journey', body_of(read(journey))))
     inventory = ''
     for r in manifest['sources']:
         inventory += '<tr>' + ''.join(f'<td>{v}</td>' for v in [
