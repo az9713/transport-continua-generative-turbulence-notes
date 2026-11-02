@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="color-scheme" content="dark light"><meta name="book-content-sha256" content="b893c5974bed8d13ac023e239014986eee08700f5d3abb6200434ebefa3e3106">
+<meta name="color-scheme" content="dark light"><meta name="book-content-sha256" content="1fa0f1b9994cb9aaff57206eaa3d7fa89957524db4836c809fc675b652c027b9">
 <title>Development journey · Transport, Continua and Generative Turbulence</title><link rel="icon" href="data:,"><link rel="stylesheet" href="assets/book.css">
 <script>window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],['\\[','\\]']],processEscapes:true},svg:{fontCache:'local'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']},startup:{pageReady:()=>MathJax.startup.defaultPageReady().then(()=>{document.documentElement.dataset.mathReady='true';})}};</script>
 <script defer src="assets/mathjax-tex-svg.js"></script><script defer src="assets/book.js"></script></head>
@@ -10,7 +10,7 @@
 <p class="lead">The course planned to train on the Johns Hopkins Turbulence Database (JHTDB). It ended with a dataset from its own 256³ simulation. Between those two points are one numerical blow-up, two discarded production runs, and two wrong conclusions by the agent. This page records all of them.</p>
 <table>
 <tbody>
-<tr><th>Dates</th><td>2026-11-01 and 2026-11-02. All times are local, UTC−8.</td></tr>
+<tr><th>Dates</th><td>2026-11-01 and 2026-11-02. Times are elapsed hours and minutes from the first JHTDB test.</td></tr>
 <tr><th>Deliverable</th><td><code>data/dns/</code> and <code>labs/dns_isotropic.py</code>, used by <a href="chapter-03-energy-spectra-from-fields.html">chapter 3</a>, <a href="chapter-06-training-data-and-study-design.html">chapter 6</a> and <a href="numerical-lab.html#own-data">the numerical lab</a>.</td></tr>
 <tr><th>Request for this page</th><td>"write a detailed development journey. focus on the generation of our own dataset (the twists and turns including pivoting from the John Hopkins dataset) to this final version."</td></tr>
 <tr><th>Decisive prompt</th><td>"OK to expedite the project, i think i will skip the JHTDB token authorization. let us generate the data ourselves. can we generate 1024^3 JHTDB data instead of 64^3 data ? what are the pros and cons"</td></tr>
@@ -32,10 +32,10 @@
 
 <h2 id="brief">1. The brief</h2>
 <p>The course joins continuum kinematics, flow matching and turbulence statistics. Its laboratory must train a generative model on three-dimensional turbulent velocity fields, then judge the samples by physical statistics. So the course needs a dataset of such fields. At the start, none of the five source repositories held one.</p>
-<p>The owner chose the kind of data in one line at 10:51 on 2026-11-01: "1 3d dataset". The same message answered three other questions: "2 you can check my local computer configuration", "3 yes PyTorch", "4 links". The owner did not name a data source. The agent recommended JHTDB.</p>
+<p>The owner chose the kind of data in one line: "1 3d dataset". The same message answered three other questions: "2 you can check my local computer configuration", "3 yes PyTorch", "4 links". The owner did not name a data source. The agent recommended JHTDB.</p>
 
 <h2 id="start">2. Starting context</h2>
-<p>The agent measured the machine before it recommended anything. The machine has an NVIDIA GeForce RTX 3050 Laptop GPU with 4096 MiB, an Intel i5-12450H CPU with 8 cores and 12 threads, 31.7 GB of RAM, and 240.7 GB of free disk. PyTorch 2.11.0 with CUDA 12.8 worked. A short benchmark of a small 3D flow-matching model (1.42 M parameters) on 64³ fields used 1281 MiB and 143 ms per step at batch 2, and 2536 MiB and 380 ms per step at batch 4. The primary record of that benchmark is a transcript only.</p>
+<p>The agent measured the machine before it recommended anything. The machine has an NVIDIA GeForce RTX 3050 Laptop GPU with 4096 MiB. PyTorch 2.11.0 with CUDA 12.8 worked. A short benchmark of a small 3D flow-matching model (1.42 M parameters) on 64³ fields used 1281 MiB and 143 ms per step at batch 2, and 2536 MiB and 380 ms per step at batch 4. The primary record of that benchmark is a transcript only.</p>
 <p>Three conditions shaped the work and are not visible in the code:</p>
 <ul>
 <li>All agent replies were in ASD-STE100 Simplified Technical English, under a standing rule of the owner.</li>
@@ -53,14 +53,14 @@
 <tr><td>The Well, <code>MHD_64</code></td><td>Rejected</td><td>72 GB, but compressible magnetohydrodynamics. The course theory is incompressible.</td></tr>
 <tr><td>JHTDB <code>isotropic1024coarse</code></td><td>Chosen, then abandoned</td><td>Forced isotropic turbulence on a 1024³ grid, which fits the theory. It needs a personal token above 16³.</td></tr>
 <tr><td>JHTDB with the free testing token</td><td>Rejected</td><td>It stops at 4096 points per request, so 16³ only. That tests a pipeline but shows no inertial range.</td></tr>
-<tr><td>Own DNS at 1024³</td><td>Rejected</td><td>Estimated working memory of 43 to 86 GB against 31.7 GB of RAM, and 5 to 12 days of CPU time.</td></tr>
+<tr><td>Own DNS at 1024³</td><td>Rejected</td><td>Estimated working memory of 43 to 86 GB, more than the RAM of the machine, and 5 to 12 days of CPU time.</td></tr>
 <tr><td>Own DNS at 64³</td><td>Rejected</td><td>Fast, but Re<sub>λ</sub> of about 30 and almost no inertial range.</td></tr>
 <tr><td>Own DNS at 128³</td><td>Fallback only</td><td>Re<sub>λ</sub> of about 60. The plan used it only if 256³ did not fit the GPU.</td></tr>
 <tr><td>Own DNS at 256³</td><td>Chosen</td><td>Estimated to fit the GPU. Re<sub>λ</sub> of about 100 was expected, and 115 was measured.</td></tr>
 </tbody>
 </table>
 <p>DNS means direct numerical simulation: a solver that computes all scales of the flow from the Navier–Stokes equations, with no turbulence model. The memory, time and Re<sub>λ</sub> values in the table were estimates or published typical values, and the agent said so at the time. The owner asked for the full explanation to go into the course, so it is in <a href="numerical-lab.html#own-data">Section 4 of the lab page</a>.</p>
-<p>The agent also corrected the premise of the owner's question: a home computer cannot generate "JHTDB data". JHTDB is one specific simulation from a supercomputer. A new run can have the same physics but not the same numbers.</p>
+<p>The agent also corrected the premise of the owner's question: one computer cannot generate "JHTDB data". JHTDB is one specific simulation from a supercomputer. A new run can have the same physics but not the same numbers.</p>
 <h3 id="decision-fields">3.2 The training fields</h3>
 <p>The model trains on 64³ fields, because the GPU cannot train on 256³. The simulation produces them in two ways, and the two ways are the sampling choice that chapter 3 teaches. A <em>filtered</em> field applies a sharp cutoff, |k<sub>i</sub>| &lt; 32, then uses the 64³ grid: it covers the whole periodic box and has no aliasing. A <em>crop</em> is a contiguous 64³ block of the 256³ field: it keeps the full resolution, but it is not periodic.</p>
 <h3 id="decision-solver">3.3 The solver</h3>
@@ -69,20 +69,19 @@
 
 <h2 id="crux">4. Three complete runs: two roundoff modes that the forcing amplified</h2>
 <table>
-<thead><tr><th>Time</th><th>Event</th></tr></thead>
+<thead><tr><th>Elapsed</th><th>Event</th></tr></thead>
 <tbody>
-<tr><td>11-01 10:54</td><td>The 64³ JHTDB test request fails on the testing token.</td></tr>
-<tr><td>11-01 11:27</td><td>Owner: "Remind me of the token later. You can proceed to complete the course". Authors draft chapters 3 and 6 around JHTDB.</td></tr>
-<tr><td>11-01 12:35</td><td>Owner: "i dont have an institution and department."</td></tr>
-<tr><td>11-01 12:48</td><td>The owner skips the token. The pivot to a course-made dataset starts.</td></tr>
-<tr><td>11-01 13:54</td><td>The first 256³ spin-up blows up at t = 0.400.</td></tr>
-<tr><td>11-01 14:16</td><td>Run 1 production starts after a stable spin-up.</td></tr>
-<tr><td>11-01 15:47</td><td>Run 1 stops at t = 90.4, probably at a session end. It restarts at 19:20 and finishes at about 19:44.</td></tr>
-<tr><td>11-01 19:49</td><td>First diagnosis: a mean flow grows from roundoff. The agent fixes it.</td></tr>
-<tr><td>11-01 19:51</td><td>Run 2 starts. It finishes at 22:08 and fails the check.</td></tr>
-<tr><td>11-01 23:07</td><td>Second diagnosis: the divergent part of the velocity grows from roundoff.</td></tr>
-<tr><td>11-02 02:12</td><td>The owner approves. Run 3 starts. It finishes at 04:22.</td></tr>
-<tr><td>11-02 06:39</td><td>Run 3 prints PASS. The agent deletes the folders of runs 1 and 2.</td></tr>
+<tr><td>0:00</td><td>The 64³ JHTDB test request fails on the testing token.</td></tr>
+<tr><td>0:33</td><td>Owner: "Remind me of the token later. You can proceed to complete the course". Authors draft chapters 3 and 6 around JHTDB.</td></tr>
+<tr><td>1:54</td><td>The owner skips the token. The pivot to a course-made dataset starts.</td></tr>
+<tr><td>3:00</td><td>The first 256³ spin-up blows up at t = 0.400.</td></tr>
+<tr><td>3:22</td><td>Run 1 production starts after a stable spin-up.</td></tr>
+<tr><td>4:53</td><td>Run 1 stops at t = 90.4, probably at a session end. It restarts 3 h 33 min later and finishes 24 min after that.</td></tr>
+<tr><td>8:55</td><td>First diagnosis: a mean flow grows from roundoff. The agent fixes it.</td></tr>
+<tr><td>8:57</td><td>Run 2 starts. It finishes 2 h 17 min later and fails the check.</td></tr>
+<tr><td>12:13</td><td>Second diagnosis: the divergent part of the velocity grows from roundoff.</td></tr>
+<tr><td>15:18</td><td>The owner approves. Run 3 starts. It finishes 2 h 10 min later.</td></tr>
+<tr><td>19:45</td><td>Run 3 prints PASS. The agent deletes the folders of runs 1 and 2.</td></tr>
 </tbody>
 </table>
 
@@ -93,8 +92,8 @@
 an authorization token can be requested by email from turbulence@lists.johnshopkins.edu
  include your name, email address, institutional affiliation and department, together with a short description of your intended use of the database</pre></div>
 <p>The agent called the token the only blocker. It listed 1000 blocks of 64³ at about 3.1 GB, and it recorded that a contiguous block spans only 1/16 of the domain per side. The owner deferred the token. Six author agents then drafted the chapters, and chapters 3 and 6 assumed JHTDB data. That text was later rewritten.</p>
-<p>The token request asks for an institution and a department, and the owner has neither. The agent replied that the request could say "independent researcher, no institutional affiliation", and it said that it did not know whether JHTDB grants tokens on that basis. It drafted an email, and it named a 64³ DNS as a fallback. Thirteen minutes later the owner chose to skip the token "to expedite the project". The transcripts have no record that a request went out, so it is not known whether JHTDB would have refused.</p>
-<p>The reasons for the pivot were the wait for a token and a request form that asks for an institution. No measured defect in JHTDB caused it, and JHTDB remains the higher-Reynolds-number dataset: Re<sub>λ</sub> 418 against 115. <code>labs/jhtdb_fetch.py</code> stays as an optional script. It ran for two 16³ cubes only.</p>
+<p>The token request asks for personal and institutional details. The agent drafted an email, and it named a 64³ DNS as a fallback. The owner then chose to skip the token "to expedite the project". The transcripts have no record that a request went out, so it is not known whether JHTDB would have refused.</p>
+<p>The reason for the pivot was the token step. No measured defect in JHTDB caused it, and JHTDB remains the higher-Reynolds-number dataset: Re<sub>λ</sub> 418 against 115. <code>labs/jhtdb_fetch.py</code> stays as an optional script. It ran for two 16³ cubes only.</p>
 
 <h3 id="first-hour">4.2 The first hour of the solver</h3>
 <p>The self-test of <code>labs/dns_isotropic.py</code> found two faults within one minute. In the first, the dissipation was summed over rounded shells. The agent changed the sum to use the exact |k| of each mode, and the residual fell from 4.1e-02 to 4.9e-05:</p>
@@ -109,8 +108,8 @@ AssertionError: filtered64 index mapping</pre></div>
 <p>The time-stepping method was Heun, a second-order Runge–Kutta method. It slowly amplifies pure advection, and at 256³ the viscosity did not damp the smallest waves fast enough. The agent replaced it with third-order SSP Runge–Kutta, and the spin-up passed t = 0.4. The change raised the cost per step: Heun took 174 to 190 ms and the new method about 260 ms, with different GPU load in the two measurements. Memory was 2113 MiB allocated and 2460 MiB reserved, against an estimate of about 1.3 GB.</p>
 
 <h3 id="run1">4.3 Run 1: a skewness that the agent dismissed</h3>
-<p>The first run looked good. At t = 9 it gave ε = 0.108 against 0.103 for JHTDB, and k<sub>max</sub>η was 1.40 against 1.35. Its step time rose from 261 ms to as much as 469 ms during spin-up. The probable cause is another GPU program, <code>sd-cli.exe</code>, which used 3602 MiB at 100 % load in an earlier test. The agent did not stop that program. The step time was 263 ms when production started.</p>
-<p>At 15:44 the owner asked for the status. The agent reported a gradient skewness of −0.97 at t = 86.8, against −0.4 to −0.6 before t = 20. It added: "One logged value fluctuates, so this value alone is not an error." <strong>That conclusion was wrong</strong>, and the next status report said so. Gradient skewness measures the asymmetry of velocity differences, and real turbulence gives about −0.4 to −0.5. The change lasted for more than 10 time units:</p>
+<p>The first run looked good. At t = 9 it gave ε = 0.108 against 0.103 for JHTDB, and k<sub>max</sub>η was 1.40 against 1.35. Its step time rose from 261 ms to as much as 469 ms during spin-up. The probable cause is another program on the same GPU, which used 3602 MiB at 100 % load in an earlier test. The agent did not stop it. The step time was 263 ms when production started.</p>
+<p>During the run, the owner asked for the status. The agent reported a gradient skewness of −0.97 at t = 86.8, against −0.4 to −0.6 before t = 20. It added: "One logged value fluctuates, so this value alone is not an error." <strong>That conclusion was wrong</strong>, and the next status report said so. Gradient skewness measures the asymmetry of velocity differences, and real turbulence gives about −0.4 to −0.5. The change lasted for more than 10 time units:</p>
 <table>
 <thead><tr><th>Time window</th><th>Mean skewness</th><th>Most negative value</th></tr></thead>
 <tbody>
@@ -122,8 +121,8 @@ AssertionError: filtered64 index mapping</pre></div>
 </tbody>
 </table>
 <p>The kinetic energy, the dissipation, Re<sub>λ</sub> and k<sub>max</sub>η stayed in their normal ranges, so the routine log lines hid the fault.</p>
-<p>The run also stopped. Its last log line is at 15:47:58, with no <code>done</code> line. It was a child process of the session, and the harness listed 4 background tasks that "didn't finish before the previous session ended". This cause is probable, not proved. The agent found the stop three hours later, when the owner asked for the status again.</p>
-<p>The owner wrote "resume the run" at 19:20. The agent restarted it as a separate process, so that a later session end could not stop it. The first logged step gave the same k and skewness as the earlier run, k = 0.5762 and −1.212 at t = 90.4. So the restart was exact, and the fault was already in the saved state. The restart also left duplicate rows for t = 90.2 and 90.4 in <code>stats.csv</code>, and the earlier restart command in the handoff would have overwritten the log, because it used <code>&gt;</code> and not <code>&gt;&gt;</code>.</p>
+<p>The run also stopped. Its last log line is at t = 90.4, with no <code>done</code> line. It was a child process of the session, and the harness listed 4 background tasks that "didn't finish before the previous session ended". This cause is probable, not proved. The agent found the stop three hours later, when the owner asked for the status again.</p>
+<p>The owner wrote "resume the run". The agent restarted it as a separate process, so that a later session end could not stop it. The first logged step gave the same k and skewness as the earlier run, k = 0.5762 and −1.212 at t = 90.4. So the restart was exact, and the fault was already in the saved state. The restart also left duplicate rows for t = 90.2 and 90.4 in <code>stats.csv</code>, and the earlier restart command in the handoff would have overwritten the log, because it used <code>&gt;</code> and not <code>&gt;&gt;</code>.</p>
 
 <h3 id="diagnosis1">4.4 First diagnosis: a mean flow from roundoff</h3>
 <p>After the run ended at t = 111, the agent measured the skewness in three directions. All three had moved, to about −1.3, so one large eddy in one direction was not the cause. The agent then looked at the mean flow, which should be zero. It was not:</p>
@@ -137,9 +136,9 @@ AssertionError: filtered64 index mapping</pre></div>
 <p>The agent did not use the first 72 time units of run 1, although they looked usable. Its reason: "the published script must be the script that made the data". This rule cost 2.1 hours and kept the record consistent.</p>
 
 <h3 id="run2">4.5 Run 2: the same symptom without a mean flow</h3>
-<p>Run 2 started at 19:51 and wrote to <code>data/dns_fixed/</code>. At 21:23 the owner repeated the agent's question and answered it: "After the new run passes its check, can I delete the 3.6 GB in data/dns/ and put the new data in its place?  yes." This approval depended on a pass.</p>
-<p>At 21:43 the agent reported on snapshots up to t = 83: mean-flow energy at most 3.9e-18, skewness −0.38 to −0.59, and "the fault that corrupted the old run has not come back". That statement was true only up to t = 83. <strong>Eight minutes later it no longer held.</strong> At t = 96 the full-grid skewness was −1.04. The agent reported that it now doubted its explanation.</p>
-<p>The run finished at 22:08 with all 100 snapshots, and it failed:</p>
+<p>Run 2 wrote to <code>data/dns_fixed/</code>. During the run, the owner repeated the agent's question and answered it: "After the new run passes its check, can I delete the 3.6 GB in data/dns/ and put the new data in its place?  yes." This approval depended on a pass.</p>
+<p>Near the end of the run, the agent reported on snapshots up to t = 83: mean-flow energy at most 3.9e-18, skewness −0.38 to −0.59, and "the fault that corrupted the old run has not come back". That statement was true only up to t = 83. <strong>Eight minutes later it no longer held.</strong> At t = 96 the full-grid skewness was −1.04. The agent reported that it now doubted its explanation.</p>
+<p>The run finished with all 100 snapshots, and it failed:</p>
 <table>
 <thead><tr><th>Measure</th><th>Steady period</th><th>End of run (t = 111)</th></tr></thead>
 <tbody>
@@ -191,9 +190,9 @@ AssertionError: filtered64 index mapping</pre></div>
 <p>The check became a tool. <code>labs/check_dns.py</code> prints FAIL on <code>data/dns_fixed</code>, with the first sustained rise at snapshots 73 to 75. So the check failed on the real fault before it was used for acceptance.</p>
 
 <h3 id="run3">4.7 Run 3: the data that the course uses</h3>
-<p>The agent asked before it started a third run. It wrote the case for each of three decisions: the run itself (about 2.2 h and 3.6 GB), the deletion of both old folders after a pass, and an unrelated edit in chapter 4. The owner answered at 02:12 on 2026-11-02: "Yes to all three questions". The run started 13 seconds later as a detached process, writing to <code>data/dns_v3</code>.</p>
+<p>The agent asked before it started a third run. It wrote the case for each of three decisions: the run itself (about 2.2 h and 3.6 GB), the deletion of both old folders after a pass, and an unrelated edit in chapter 4. The owner answered: "Yes to all three questions". The run started 13 seconds later as a detached process, writing to <code>data/dns_v3</code>.</p>
 <div class="output"><pre>python -u labs/dns_isotropic.py --n 256 --spinup 12 --every 1.0 --snaps 100 --log 50 --out data/dns_v3</pre></div>
-<p>It finished at 04:22. At 06:39 the check printed PASS. This is the output on the published data, as run again for this page:</p>
+<p>It took 2 h 10 min. Later, the check printed PASS. This is the output on the published data, as run again for this page:</p>
 <div class="output"><pre>100 snapshots; max mean-flow energy 6.3e-18; max divergent energy 4.1e-15
 snaps   0- 19  skew [-0.41 -0.45 -0.44]  flat [4.41 4.48 4.42]
 snaps  20- 39  skew [-0.44 -0.44 -0.45]  flat [4.56 4.51 4.53]
@@ -246,7 +245,7 @@ PASS</pre></div>
 </tbody>
 </table>
 <p><strong>Agents.</strong> The transcripts of all six sessions show the model <code>claude-opus-5-5</code>. The lead agent did the dataset work inline: the solver, the three runs and both diagnoses. Subagents did the depth checks of the source editions, the first drafts of the six chapters, and the chapter reviews with the <code>science-editor</code> skill. In the reviews of chapters 3 and 6, each round used a different agent, and an agent never accepted a fix that it wrote, so each chapter needed a third reader. No advisor review took part in the dataset work. Both diagnoses are the work of one agent, with no independent check of the mechanism. The evidence for the second one is the measured rate.</p>
-<p><strong>Human decisions.</strong> The owner acted at these points: "1 3d dataset"; "Remind me of the token later"; "i dont have an institution and department."; the skip of the token and the size question; the request to put the trade-offs into a page; "resume the run"; the conditional delete approval; "Yes to all three questions"; and a final goal that told the agent to finish without the owner in the loop.</p>
+<p><strong>Human decisions.</strong> The owner acted at these points: "1 3d dataset"; "Remind me of the token later"; the skip of the token and the size question; the request to put the trade-offs into a page; "resume the run"; the conditional delete approval; "Yes to all three questions"; and a final goal that told the agent to finish without the owner in the loop.</p>
 
 <h2 id="wrong">7. What went wrong, and the fixes</h2>
 <ol>
@@ -264,7 +263,7 @@ PASS</pre></div>
 <li><strong>Divergence fault.</strong> Divergent energy of 0.17 at t = 111, and flatness of about 28. <code>clean()</code> now projects the velocity.</li>
 <li><strong>Test harness bug.</strong> <code>RuntimeError: imag is not implemented for tensors with non-complex dtypes.</code> The per-mode forcing runs passed a real tensor to <code>energy()</code>. The agent fixed the script and ran a second batch.</li>
 <li><strong>A wrong docstring.</strong> The docstring of <code>clean()</code> first gave the mean flow as the cause of the skewness rise. The agent corrected it after the second diagnosis.</li>
-<li><strong>GPU contention.</strong> <code>sd-cli.exe</code> probably raised the DNS step time from 261 to as much as 469 ms in spin-up. Lab 2 took 753 ms per step in its middle 6000 steps, against about 298 ms elsewhere, while review agents ran. The cause of the Lab 2 change was not isolated. The DNS and Lab 2 cannot share the 4096 MiB card, so they ran in sequence.</li>
+<li><strong>GPU contention.</strong> Another program on the GPU probably raised the DNS step time from 261 to as much as 469 ms in spin-up. Lab 2 took 753 ms per step in its middle 6000 steps, against about 298 ms elsewhere, while review agents ran. The cause of the Lab 2 change was not isolated. The DNS and Lab 2 cannot share the 4096 MiB card, so they ran in sequence.</li>
 <li><strong>Budget estimate.</strong> The Lab 2 estimate of 1.19 GPU-hours came from a short probe of 143 ms per step. The measured 298 ms gives about 2.5 hours, 2.1 times as long.</li>
 </ol>
 
@@ -286,7 +285,7 @@ PASS</pre></div>
 </ul>
 
 <h2 id="stands">9. Where things stand</h2>
-<p>The dataset is final and its statistics are public in <code>data/dns/</code>. The snapshots are not in the repository; <a href="https://github.com/az9713/transport-continua-generative-turbulence-notes/blob/main/WORKFLOW.md">WORKFLOW.md</a> gives the commands that regenerate them. The first command took 2.13 hours on the machine above.</p>
+<p>The dataset is final and its statistics are public in <code>data/dns/</code>. The snapshots are not in the repository; <code>WORKFLOW.md</code> in the repository gives the commands that regenerate them. The first command took 2.13 hours on the machine above.</p>
 <p><strong>Unfinished, by decision.</strong> Each item below has a cost, and the course stands without it:</p>
 <ul>
 <li><strong>JHTDB at 64³.</strong> Never run, because there is no token. It needs a token request. It would add a Reynolds number of 418 and an inertial range. <code>labs/jhtdb_fetch.py</code> is ready, but its commands were not run at that size.</li>
